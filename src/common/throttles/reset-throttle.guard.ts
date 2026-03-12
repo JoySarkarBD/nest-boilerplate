@@ -1,0 +1,44 @@
+/**
+ * @fileoverview Reset-password throttle guard.
+ *
+ * Limits how often a single device can submit a password-reset
+ * using the `RESET_PASSWORD` rate-limit constants.
+ */
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Request } from 'express';
+import { RedisClientService } from '../../common/redis/redis.client';
+import {
+  BaseThrottleGuard,
+  ThrottleConfig,
+} from '../../common/throttles/base-throttle.guard';
+import { RESET_PASSWORD } from './auth-throttle.constants';
+
+@Injectable()
+export class ResetThrottleGuard extends BaseThrottleGuard {
+  constructor(redis: RedisClientService) {
+    const config: ThrottleConfig = {
+      keyPrefix: RESET_PASSWORD.KEY_PREFIX,
+      ttlSeconds: RESET_PASSWORD.TTL_SECONDS,
+      limit: RESET_PASSWORD.LIMIT,
+    };
+    super(redis, config);
+  }
+
+  /**
+   * Build unique identifier from deviceId for throttling.
+   * @param req - Express request
+   * @returns string identifier
+   * @throws HttpException if deviceId is missing
+   */
+  protected buildIdentifier(req: Request): string {
+    const deviceId = req.headers['x-device-id'] as string;
+    if (!deviceId) {
+      throw new HttpException(
+        'Device identifier missing - x-device-id header is required',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return `${deviceId}`;
+  }
+}
