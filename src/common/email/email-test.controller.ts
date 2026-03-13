@@ -1,8 +1,23 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UsePipes } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SendEmailDto } from 'src/common/email/dto/send-email.dto';
 import { EmailService } from 'src/common/email/email.service';
 import { ServicePayload } from 'src/shared/interfaces/response.interface';
+import { ApiErrorResponses } from '../decorators/api-error-response.decorator';
+import { ApiSuccessResponse } from '../decorators/api-success-response.decorator';
+import {
+  MailSendBulkInternalServerErrorDto,
+  MailSendInternalServerErrorDto,
+} from './dto/error/mail-send-internal-server-error.dto';
+import {
+  MailSendBulkValidationDto,
+  MailSendValidationDto,
+} from './dto/error/mail-send-validation.dto';
+import {
+  MailSendBulkSuccessResponseDto,
+  MailSendSuccessResponseDto,
+} from './dto/success/mail-send-success.dto';
+import { BulkValidationPipe } from '../pipes/bulk-validation.pipe';
 
 @ApiTags('Email Test')
 @Controller('test/email')
@@ -14,6 +29,11 @@ export class EmailTestController {
    * The HTTP response is returned immediately — delivery happens in the background.
    */
   @ApiOperation({ summary: 'Send a single email in the background' })
+  @ApiSuccessResponse(MailSendSuccessResponseDto, 201)
+  @ApiErrorResponses({
+    validation: MailSendValidationDto,
+    internal: MailSendInternalServerErrorDto,
+  })
   @Post('send')
   async sendEmail(
     @Body() dto: SendEmailDto,
@@ -28,11 +48,19 @@ export class EmailTestController {
    */
   @ApiOperation({ summary: 'Send multiple emails in the background (bulk)' })
   @ApiBody({ type: SendEmailDto, isArray: true })
+  @ApiSuccessResponse(MailSendBulkSuccessResponseDto, 201)
+  @ApiErrorResponses({
+    validation: MailSendBulkValidationDto,
+    internal: MailSendBulkInternalServerErrorDto,
+  })
   @Post('send-bulk')
-  async sendBulkEmail(
-    @Body() dto: SendEmailDto[],
-  ): Promise<ServicePayload<{ queued: number }>> {
+  @UsePipes(new BulkValidationPipe())
+  async sendBulkEmail(@Body() dto: SendEmailDto[]) {
     const result = await this.emailService.sendBulkEmail(dto);
-    return { message: result.message, data: { queued: result.queued } };
+
+    return {
+      message: result.message,
+      data: { queued: result.queued },
+    };
   }
 }

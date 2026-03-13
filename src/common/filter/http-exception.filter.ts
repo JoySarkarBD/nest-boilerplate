@@ -34,7 +34,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
     let message = 'Internal server error';
-    let errors: Array<{ field: string; message: string }> | undefined;
+    let errors: any[] | undefined;
     let error: string | undefined;
 
     /* Validation-pipe errors arrive as a raw array */
@@ -60,6 +60,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         const obj = body as Record<string, any>;
         message = obj.message || message;
         error = obj.error;
+        errors = obj.errors || errors; // Extract errors if present in body
         isRouteNotFound =
           typeof obj.message === 'string' && obj.message.startsWith('Cannot ');
       }
