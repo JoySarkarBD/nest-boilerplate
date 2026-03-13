@@ -1,3 +1,7 @@
+/**
+ * @fileoverview BulkValidationPipe — validates an array of `SendEmailDto` items.
+ * Throws a structured 400 with per-item `{ index, field, message }` errors.
+ */
 import {
   ArgumentMetadata,
   BadRequestException,
@@ -8,8 +12,10 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { SendEmailDto } from 'src/common/email/dto/send-email.dto';
 
+/** Validates each item in a bulk request body against `SendEmailDto`. */
 @Injectable()
 export class BulkValidationPipe implements PipeTransform {
+  /** @throws BadRequestException with `{ index, field, message }` errors if any item is invalid. */
   async transform(value: any, metadata: ArgumentMetadata) {
     if (!Array.isArray(value)) {
       throw new BadRequestException({

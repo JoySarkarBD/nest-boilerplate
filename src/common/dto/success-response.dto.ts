@@ -1,6 +1,10 @@
+/**
+ * @fileoverview Standard success response DTO used as the Swagger schema base for all 2xx responses.
+ */
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
+/** Generic success response envelope. Extend and override fields to create endpoint-specific Swagger docs. */
 export class SuccessResponseDto<T> {
   @ApiProperty({ example: true })
   success!: boolean;

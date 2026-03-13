@@ -1,5 +1,6 @@
 /**
- * This enum defines the standard HTTP methods used in API requests. It provides a centralized and consistent way to reference these methods throughout the codebase, improving readability and reducing the likelihood of typos or inconsistencies when specifying HTTP methods in controllers, services, or other parts of the application.
+ * @fileoverview Standard HTTP methods enum.
+ * Centralises method names to prevent typos across the codebase.
  */
 export enum Methods {
   GET = 'GET',

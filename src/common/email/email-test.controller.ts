@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Email test controller — exposes POST endpoints for testing single and bulk email sends.
+ * All delivery is handled asynchronously by the BullMQ worker; API responses return immediately.
+ */
 import { Body, Controller, Post, UsePipes } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SendEmailDto } from 'src/common/email/dto/send-email.dto';
@@ -24,10 +28,7 @@ import { BulkValidationPipe } from '../pipes/bulk-validation.pipe';
 export class EmailTestController {
   constructor(private readonly emailService: EmailService) {}
 
-  /**
-   * Send a single email (or fan out to multiple recipients via the `to` array).
-   * The HTTP response is returned immediately — delivery happens in the background.
-   */
+  /** Enqueue a single email (or fan-out per recipient when `to` is an array). Returns immediately. */
   @ApiOperation({ summary: 'Send a single email in the background' })
   @ApiSuccessResponse(MailSendSuccessResponseDto, 201)
   @ApiErrorResponses({
@@ -42,10 +43,7 @@ export class EmailTestController {
     return { message: result.message, data: { queued: result.queued } };
   }
 
-  /**
-   * Send multiple independent email messages at once.
-   * The HTTP response is returned immediately — all deliveries happen in the background.
-   */
+  /** Enqueue multiple independent email messages. Returns immediately. */
   @ApiOperation({ summary: 'Send multiple emails in the background (bulk)' })
   @ApiBody({ type: SendEmailDto, isArray: true })
   @ApiSuccessResponse(MailSendBulkSuccessResponseDto, 201)

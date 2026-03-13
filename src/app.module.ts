@@ -1,8 +1,6 @@
 /**
- * @fileoverview Root module of the API Gateway.
- *
- * Imports all feature modules,
- * and wires up the health-check controller.
+ * @fileoverview Root application module.
+ * Bootstraps all feature modules and registers global controllers.
  */
 import { Module } from '@nestjs/common';
 import { CatController } from './cat/cat.controller';

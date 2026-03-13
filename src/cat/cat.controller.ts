@@ -1,3 +1,6 @@
+/**
+ * @fileoverview Cat controller — example feature module demonstrating the boilerplate's response pattern.
+ */
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { ApiErrorResponses } from 'src/common/decorators/api-error-response.decorator';
@@ -12,11 +15,10 @@ import { GetCatResponseDto } from './interfaces/cat.interface';
 export class CatController {
   constructor(private readonly catService: CatService) {}
 
+  /** Retrieve a cat. */
   @ApiOperation({ summary: 'Get Cat' })
   @ApiSuccessResponse(GetCatSuccessResponseDto, 200)
-  @ApiErrorResponses({
-    internal: CatInternalErrorResponseDto,
-  })
+  @ApiErrorResponses({ internal: CatInternalErrorResponseDto })
   @Get()
   async getCat(): Promise<ServicePayload<GetCatResponseDto>> {
     return this.catService.getCat();
