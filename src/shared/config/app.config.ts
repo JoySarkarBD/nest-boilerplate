@@ -52,6 +52,8 @@ interface AppConfig {
   REDIS_DB_SESSION: number;
   /** Redis database index for throttle counters. */
   REDIS_DB_THROTTLE: number;
+  /** Redis database index for email queue. */
+  REDIS_DB_EMAIL_QUEUE: number;
 }
 
 /**
@@ -94,6 +96,7 @@ const config: AppConfig = {
   REDIS_DB_AUTH: int('REDIS_DB_AUTH'),
   REDIS_DB_SESSION: int('REDIS_DB_SESSION'),
   REDIS_DB_THROTTLE: int('REDIS_DB_THROTTLE'),
+  REDIS_DB_EMAIL_QUEUE: int('REDIS_DB_EMAIL_QUEUE'),
 };
 
 export default config;

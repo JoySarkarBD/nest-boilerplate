@@ -6,7 +6,7 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { RedisClientService } from '../../redis.client';
-import { REDIS_TOKEN_PREFIX } from './../../redis.constants';
+import { REDIS_TOKEN_PREFIX } from '../../constants/auth/auth.constants';
 
 /**
  * Logger-enabled Redis token service to aid debugging when tokens

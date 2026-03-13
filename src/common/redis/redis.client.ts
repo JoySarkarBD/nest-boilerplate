@@ -3,7 +3,7 @@
  * Manages dedicated Redis connections for auth tokens, sessions, and throttling.
  */
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import Redis from 'ioredis';
+import Redis, { RedisOptions } from 'ioredis';
 import config from 'src/shared/config/app.config';
 
 /**
@@ -66,8 +66,25 @@ export class RedisClientService implements OnModuleDestroy {
     return this.clientSession;
   }
 
+  /** Returns the throttle-scoped Redis client. */
   getClientThrottle() {
     return this.clientThrottle;
+  }
+
+  /**
+   * Returns plain connection options for the email queue.
+   * Use this when passing a connection to bullmq to avoid the
+   * dual-ioredis type conflict (bullmq bundles its own ioredis).
+   */
+  getClientEmailQueueOptions(): RedisOptions {
+    return {
+      host: config.REDIS_HOST ?? '127.0.0.1',
+      port: Number(config.REDIS_PORT ?? 6379),
+      password: config.REDIS_PASSWORD || undefined,
+      db: config.REDIS_DB_EMAIL_QUEUE
+        ? Number(config.REDIS_DB_EMAIL_QUEUE)
+        : undefined,
+    };
   }
 
   /** Gracefully close all Redis connections on module teardown. */
