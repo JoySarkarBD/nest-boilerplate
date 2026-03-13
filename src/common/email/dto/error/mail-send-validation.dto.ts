@@ -22,9 +22,9 @@ export class MailSendValidationDto extends ValidationErrorResponseDto {
         field: 'to',
         message: 'to is required - can be string or array of strings',
       },
-      { field: 'subject', message: 'subject is required' },
-      { field: 'html', message: 'html is required' },
-      { field: 'text', message: 'text is required' },
+      { field: 'subject', message: 'subject must be a string' },
+      { field: 'html', message: 'html must be a string' },
+      { field: 'text', message: 'text must be a string' },
     ],
   })
   declare errors: FieldErrorDto[];
