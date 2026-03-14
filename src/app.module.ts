@@ -8,10 +8,11 @@ import { CatService } from './cat/cat.service';
 import { RedisModule } from './common/redis/redis.module';
 import { EmailModule } from './common/email/email.module';
 import { EmailTestController } from './common/email/email-test.controller';
+import { FileUploadTestController } from './common/file-upload/file-upload-test.controller';
 
 @Module({
   imports: [RedisModule, EmailModule],
-  controllers: [CatController, EmailTestController],
+  controllers: [CatController, EmailTestController, FileUploadTestController],
   providers: [CatService],
 })
 export class AppModule {}

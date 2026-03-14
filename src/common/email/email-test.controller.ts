@@ -16,7 +16,7 @@ import {
 import {
   MailSendBulkValidationDto,
   MailSendValidationDto,
-} from './dto/error/mail-send-validation.dto';
+} from './dto/error/mail-send-validation-error.dto';
 import {
   MailSendBulkSuccessResponseDto,
   MailSendSuccessResponseDto,

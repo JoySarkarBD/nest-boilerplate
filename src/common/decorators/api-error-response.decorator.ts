@@ -9,8 +9,10 @@ import {
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
+  ApiPayloadTooLargeResponse,
   ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
+  ApiUnsupportedMediaTypeResponse,
 } from '@nestjs/swagger';
 import { CustomConflictDto } from '../dto/custom-conflict.dto';
 import { CustomForbiddenDto } from '../dto/custom-forbidden.dto';
@@ -18,6 +20,8 @@ import { CustomInternalServerErrorDto } from '../dto/custom-internal-server-erro
 import { CustomNotFoundDto } from '../dto/custom-not-found.dto';
 import { CustomUnauthorizedDto } from '../dto/custom-unauthorized.dto';
 import { ValidationErrorResponseDto } from '../dto/validation-error.dto';
+import { CustomUnsupportedMediaTypeDto } from '../dto/custom-unsupported-media-type.dto';
+import { FileUploadPayloadTooLargeDto } from '../file-upload/dto/error/file-upload-validation-error.dto';
 
 /** Map of optional error DTOs. Omit a key to skip that status code in Swagger docs. */
 interface ErrorDtoMap {
@@ -31,6 +35,10 @@ interface ErrorDtoMap {
   notFound?: any;
   /** 409 Conflict. */
   conflict?: any;
+  /** 413 Payload Too Large. */
+  payloadTooLarge?: any;
+  /** 415 Unsupported Media Type. */
+  unsupported?: any;
   /** 500 Internal Server Error. */
   internal?: any;
   /** 429 Too Many Requests. */
@@ -60,6 +68,14 @@ export function ApiErrorResponses(dtos: ErrorDtoMap) {
     decorators.push(ApiNotFoundResponse({ type: dtos.notFound || CustomNotFoundDto }));
   if (dtos.conflict)
     decorators.push(ApiConflictResponse({ type: dtos.conflict || CustomConflictDto }));
+  if (dtos.payloadTooLarge)
+    decorators.push(
+      ApiPayloadTooLargeResponse({
+        type: dtos.payloadTooLarge || FileUploadPayloadTooLargeDto,
+      }),
+    );
+  if (dtos.unsupported)
+    decorators.push(ApiUnsupportedMediaTypeResponse({ type: dtos.unsupported || CustomUnsupportedMediaTypeDto }));
   if (dtos.internal)
     decorators.push(ApiInternalServerErrorResponse({ type: dtos.internal || CustomInternalServerErrorDto }));
   if (dtos.throttle)
