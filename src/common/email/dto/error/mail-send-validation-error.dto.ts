@@ -22,7 +22,10 @@ export class MailSendValidationDto extends ValidationErrorResponseDto {
   @ApiProperty({
     type: [FieldErrorDto],
     example: [
-      { field: 'to', message: 'to is required - can be string or array of strings' },
+      {
+        field: 'to',
+        message: 'to is required - can be string or array of strings',
+      },
       { field: 'subject', message: 'subject must be a string' },
     ],
   })
@@ -33,15 +36,15 @@ export class MailSendValidationDto extends ValidationErrorResponseDto {
 export class BulkFieldErrorDto {
   /** Index of the item in the bulk array that failed. */
   @ApiProperty({ example: 0 })
-  index: number;
+  index!: number;
 
   /** The invalid field name. */
   @ApiProperty({ example: 'to' })
-  field: string;
+  field!: string;
 
   /** Validation failure message. */
   @ApiProperty({ example: 'Invalid email format' })
-  message: string;
+  message!: string;
 }
 
 /** Swagger 400 validation error shape for POST /api/test/email/send-bulk. */

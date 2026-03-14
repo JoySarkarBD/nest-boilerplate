@@ -1,7 +1,10 @@
-/** Swagger schema for 403 Forbidden responses. */
+/**
+ * @fileoverview DTO for 403 Forbidden responses, used in Swagger documentation.
+ */
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
+/** Swagger schema for 403 Forbidden responses. */
 export class CustomForbiddenDto {
   @ApiProperty({ example: false })
   success!: boolean;

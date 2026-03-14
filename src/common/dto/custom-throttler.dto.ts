@@ -1,7 +1,10 @@
-/** Swagger schema for 429 Too Many Requests responses. */
+/**
+ * @fileoverview DTO for 429 Too Many Requests responses, used in Swagger documentation.
+ */
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
+/** Swagger schema for 429 Too Many Requests responses. */
 export class CustomTooManyRequestsDto {
   @ApiProperty({ example: false })
   success!: boolean;

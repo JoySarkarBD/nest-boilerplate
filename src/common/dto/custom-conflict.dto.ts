@@ -1,7 +1,10 @@
-/** Swagger schema for 409 Conflict responses. */
+/**
+ * @fileoverview DTO for 409 Conflict responses, used in Swagger documentation.
+ */
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
+/** Swagger schema for 409 Conflict responses. */
 export class CustomConflictDto {
   @ApiProperty({ example: false })
   success!: boolean;

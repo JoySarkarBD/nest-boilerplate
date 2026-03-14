@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Constants for the email module, including queue and job names, and retry settings.
+ */
+
+/** Email queue name. */
 export const EMAIL_QUEUE = 'email-queue';
 export const EMAIL_JOB = 'send-email';
 

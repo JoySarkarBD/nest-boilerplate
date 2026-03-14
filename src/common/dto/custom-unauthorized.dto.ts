@@ -1,7 +1,10 @@
-/** Swagger schema for 401 Unauthorized responses. */
+/**
+ * @fileoverview DTO for 401 Unauthorized responses, used in Swagger documentation.
+ */
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
+/** Swagger schema for 401 Unauthorized responses. */
 export class CustomUnauthorizedDto {
   @ApiProperty({ example: false })
   success!: boolean;

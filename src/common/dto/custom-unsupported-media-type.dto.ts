@@ -1,7 +1,10 @@
-/** Swagger schema for 415 Unsupported Media Type responses. */
+/**
+ * @fileoverview DTO for 415 Unsupported Media Type responses, used in Swagger documentation.
+ */
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
+/** Swagger schema for 415 Unsupported Media Type responses. */
 export class CustomUnsupportedMediaTypeDto {
   @ApiProperty({ example: false })
   success!: boolean;

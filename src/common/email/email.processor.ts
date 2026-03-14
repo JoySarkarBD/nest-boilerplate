@@ -1,15 +1,24 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { Worker, Job } from 'bullmq';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
+import { Job, Worker } from 'bullmq';
 import * as nodemailer from 'nodemailer';
-import { RedisClientService } from '../redis/redis.client';
-import { EMAIL_QUEUE, EMAIL_JOB, EMAIL_MAX_ATTEMPTS } from './constants/email.constants';
-import { EmailJobData } from './interfaces/email.interface';
 import config from 'src/shared/config/app.config';
+import { RedisClientService } from '../redis/redis.client';
+import {
+  EMAIL_JOB,
+  EMAIL_MAX_ATTEMPTS,
+  EMAIL_QUEUE,
+} from './constants/email.constants';
+import { EmailJobData } from './interfaces/email.interface';
 
 @Injectable()
 export class EmailProcessor implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(EmailProcessor.name);
-  private worker: Worker<EmailJobData>;
+  private worker!: Worker<EmailJobData>;
 
   /**
    * Nodemailer transporter — reads SMTP settings from the centralised config
@@ -44,7 +53,9 @@ export class EmailProcessor implements OnModuleInit, OnModuleDestroy {
           text: job.data.text,
         });
 
-        this.logger.log(`✅ Email sent → ${job.data.to} | subject: "${job.data.subject}"`);
+        this.logger.log(
+          `✅ Email sent → ${job.data.to} | subject: "${job.data.subject}"`,
+        );
       },
       {
         connection: this.redisClientService.getClientEmailQueueOptions(),
@@ -53,29 +64,32 @@ export class EmailProcessor implements OnModuleInit, OnModuleDestroy {
     );
 
     // ── Retry progress ──────────────────────────────────────────────────────
-    this.worker.on('failed', (job: Job<EmailJobData> | undefined, err: Error) => {
-      if (!job) return;
+    this.worker.on(
+      'failed',
+      (job: Job<EmailJobData> | undefined, err: Error) => {
+        if (!job) return;
 
-      const remaining = EMAIL_MAX_ATTEMPTS - job.attemptsMade;
+        const remaining = EMAIL_MAX_ATTEMPTS - job.attemptsMade;
 
-      if (job.attemptsMade < EMAIL_MAX_ATTEMPTS) {
-        this.logger.warn(
-          `⚠️  Job #${job.id} failed (attempt ${job.attemptsMade}/${EMAIL_MAX_ATTEMPTS}). ` +
-            `Retrying ${remaining} more time(s). Error: ${err.message}`,
+        if (job.attemptsMade < EMAIL_MAX_ATTEMPTS) {
+          this.logger.warn(
+            `⚠️  Job #${job.id} failed (attempt ${job.attemptsMade}/${EMAIL_MAX_ATTEMPTS}). ` +
+              `Retrying ${remaining} more time(s). Error: ${err.message}`,
+          );
+          return;
+        }
+
+        // All attempts exhausted — log the full details for ops investigation
+        this.logger.error(
+          `❌ Email permanently failed after ${EMAIL_MAX_ATTEMPTS} attempts.\n` +
+            `   Job ID  : ${job.id}\n` +
+            `   To      : ${job.data.to}\n` +
+            `   Subject : ${job.data.subject}\n` +
+            `   Error   : ${err.message}\n` +
+            `   Stack   : ${err.stack ?? 'n/a'}`,
         );
-        return;
-      }
-
-      // All attempts exhausted — log the full details for ops investigation
-      this.logger.error(
-        `❌ Email permanently failed after ${EMAIL_MAX_ATTEMPTS} attempts.\n` +
-          `   Job ID  : ${job.id}\n` +
-          `   To      : ${job.data.to}\n` +
-          `   Subject : ${job.data.subject}\n` +
-          `   Error   : ${err.message}\n` +
-          `   Stack   : ${err.stack ?? 'n/a'}`,
-      );
-    });
+      },
+    );
 
     // ── Completion ──────────────────────────────────────────────────────────
     this.worker.on('completed', (job: Job<EmailJobData>) => {
