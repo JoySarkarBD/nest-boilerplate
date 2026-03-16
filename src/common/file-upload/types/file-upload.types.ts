@@ -1,5 +1,7 @@
 /**
  * @fileoverview Configuration types for the file upload interceptor system.
+ * These interfaces define the validation rules and safety thresholds
+ * used by the file upload decorators.
  */
 
 /** Image attack-prevention thresholds. */

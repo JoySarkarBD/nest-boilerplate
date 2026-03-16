@@ -4,7 +4,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
-/** Swagger schema for a 500 Internal Server Error response. */
+/**
+ * Represents a 500 Internal Server Error response.
+ * This is the base DTO used to document unexpected server-side errors in Swagger.
+ */
 export class CustomInternalServerErrorDto {
   @ApiProperty({ example: false })
   success!: boolean;

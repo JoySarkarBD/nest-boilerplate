@@ -5,7 +5,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { SuccessResponseDto } from 'src/common/dto/success-response.dto';
 import { Methods } from 'src/common/enum/methods.enum';
 
-/** DTO for single file upload success response */
+/**
+ * Detailed information about a single uploaded file.
+ */
 class SingleFileResponseData {
   @ApiProperty({ example: 'avatar.jpg' })
   fileName: string;
@@ -17,7 +19,9 @@ class SingleFileResponseData {
   mimetype: string;
 }
 
-/** DTO for single file upload success response */
+/**
+ * Represents a 201 Created response for a successful single file upload.
+ */
 export class FileUploadSingleSuccessDto extends SuccessResponseDto<any> {
   @ApiProperty({ example: 'File uploaded and validated successfully' })
   declare message: string;
@@ -38,13 +42,17 @@ export class FileUploadSingleSuccessDto extends SuccessResponseDto<any> {
   declare data: SingleFileResponseData;
 }
 
-/** DTO for multiple files upload success response */
+/**
+ * Container for multiple file upload response data.
+ */
 class MultipleFilesResponseData {
   @ApiProperty({ type: [SingleFileResponseData] })
   files: SingleFileResponseData[];
 }
 
-/** DTO for multiple files upload success response */
+/**
+ * Represents a 201 Created response for successful multiple files upload.
+ */
 export class FileUploadMultipleSuccessDto extends SuccessResponseDto<MultipleFilesResponseData> {
   @ApiProperty({ example: '2 files uploaded and validated successfully' })
   declare message: string;

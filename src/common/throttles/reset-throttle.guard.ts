@@ -13,6 +13,10 @@ import {
 } from '../../common/throttles/base-throttle.guard';
 import { RESET_PASSWORD } from './auth-throttle.constants';
 
+/**
+ * Throttle guard for the reset-password endpoint.
+ * Limits the number of password reset attempts from a single device to prevent brute-force.
+ */
 @Injectable()
 export class ResetThrottleGuard extends BaseThrottleGuard {
   constructor(redis: RedisClientService) {

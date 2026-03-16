@@ -1,9 +1,7 @@
 /**
- * @fileoverview Global HTTP exception filter.
- *
- * Catches every thrown exception (including raw validation-error
- * arrays produced by the global ValidationPipe) and normalises
- * them into a predictable JSON response envelope.
+ * @fileoverview Global HTTP exception filter for the NestJS application.
+ * Catches all exceptions thrown within the application context, including standard HTTP
+ * exceptions and custom errors, transforming them into a standardized JSON response format.
  */
 import {
   ArgumentsHost,
@@ -14,14 +12,17 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 
+/**
+ * HttpExceptionFilter is responsible for processing exceptions and formatting the API's error responses.
+ * It ensures that all errors, whether expected or unexpected, follow the same response structure.
+ */
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   /**
-   * Handles any thrown exception and writes a standardised JSON
-   * response to the client.
+   * Handles any caught exception and transforms it into a standardized response.
    *
-   * @param exception - The caught error (HttpException, validation array, or unknown).
-   * @param host - Nest argument host for accessing the HTTP layer.
+   * @param exception - The caught exception or error object.
+   * @param host - The arguments host, providing access to the current request and response objects.
    */
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();

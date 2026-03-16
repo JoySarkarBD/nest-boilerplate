@@ -25,13 +25,18 @@ interface SwaggerRequestConfig {
 }
 
 /**
- * Composite decorator to document route params and query strings in a single call.
+ * Composite decorator to document route parameters and query strings in a single call.
+ * This is a convenience wrapper around multiple Swagger decorators.
  *
- * @param config - Params, queries, and optional DTO models to register.
+ * @param config - Configuration object specifying params, queries, and optional DTO models.
+ * @returns A method decorator that applies the necessary Swagger decorators.
  *
  * @example
  * ```ts
- * @ApiRequestDetails({ params: [{ name: 'id', required: true }], queries: { name: 'search' } })
+ * @ApiRequestDetails({
+ *   params: [{ name: 'id', required: true }],
+ *   queries: [{ name: 'search', required: false }]
+ * })
  * ```
  */
 export function ApiRequestDetails(

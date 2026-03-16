@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Email module definition.
+ * It encapsulates all email-related logic, including the service, processor, and queue provider.
+ */
 import { Module } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { EmailQueueProvider } from './email.queue';

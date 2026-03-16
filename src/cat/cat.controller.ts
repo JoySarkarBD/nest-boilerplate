@@ -11,6 +11,10 @@ import { CatInternalErrorResponseDto } from './dto/error/cat-internal-server-err
 import { GetCatSuccessResponseDto } from './dto/success/cat-success.dto';
 import { GetCatResponseDto } from './interfaces/cat.interface';
 
+/**
+ * CatController provides HTTP endpoints for managing cat resources.
+ * It serves as an example of how to implement standard response patterns and Swagger documentation.
+ */
 @Controller('cat')
 export class CatController {
   constructor(private readonly catService: CatService) {}

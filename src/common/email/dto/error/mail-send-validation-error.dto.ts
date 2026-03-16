@@ -8,7 +8,10 @@ import {
 } from 'src/common/dto/validation-error.dto';
 import { Methods } from 'src/common/enum/methods.enum';
 
-/** Swagger 400 validation error shape for POST /api/test/email/send. */
+/**
+ * Represents a 400 Bad Request response for a single email validation failure.
+ * This DTO is used to document the validation error shape for email endpoints in Swagger.
+ */
 export class MailSendValidationDto extends ValidationErrorResponseDto {
   @ApiProperty({ example: Methods.POST, enum: Methods })
   declare method: Methods.POST;
@@ -32,7 +35,10 @@ export class MailSendValidationDto extends ValidationErrorResponseDto {
   declare errors: FieldErrorDto[];
 }
 
-/** Single field-level error for a bulk email item, includes the array index. */
+/**
+ * Represents a single field-level error for a bulk email item.
+ * Includes the index of the item within the bulk array to help identify the source of the error.
+ */
 export class BulkFieldErrorDto {
   /** Index of the item in the bulk array that failed. */
   @ApiProperty({ example: 0 })
@@ -47,7 +53,10 @@ export class BulkFieldErrorDto {
   message!: string;
 }
 
-/** Swagger 400 validation error shape for POST /api/test/email/send-bulk. */
+/**
+ * Represents a 400 Bad Request response for bulk email validation failures.
+ * This DTO documents the structure of errors returned when multiple email items fail validation.
+ */
 export class MailSendBulkValidationDto extends ValidationErrorResponseDto {
   @ApiProperty({ example: Methods.POST, enum: Methods })
   declare method: Methods.POST;

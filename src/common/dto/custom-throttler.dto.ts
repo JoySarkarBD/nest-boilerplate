@@ -4,7 +4,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
-/** Swagger schema for 429 Too Many Requests responses. */
+/**
+ * Represents a 429 Too Many Requests error response.
+ * This DTO defines the structure of the response returned when a user has exceeded
+ * the allowed rate limit for an endpoint.
+ */
 export class CustomTooManyRequestsDto {
   @ApiProperty({ example: false })
   success!: boolean;

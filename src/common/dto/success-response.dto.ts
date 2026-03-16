@@ -4,7 +4,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
-/** Generic success response envelope. Extend and override fields to create endpoint-specific Swagger docs. */
+/**
+ * A generic template for all successful API responses (2xx).
+ * This class provides a consistent envelope that includes metadata about the request
+ * and an optional data payload.
+ */
 export class SuccessResponseDto<T> {
   @ApiProperty({ example: true })
   success!: boolean;

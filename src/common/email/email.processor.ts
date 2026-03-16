@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Email processor worker.
+ * This file contains the BullMQ worker logic that consumes email jobs from the queue
+ * and sends them using Nodemailer.
+ */
 import {
   Injectable,
   Logger,
@@ -15,6 +20,10 @@ import {
 } from './constants/email.constants';
 import { EmailJobData } from './interfaces/email.interface';
 
+/**
+ * EmailProcessor is a background worker that handles the actual delivery of emails.
+ * It listens to the email queue and processes jobs asynchronously.
+ */
 @Injectable()
 export class EmailProcessor implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(EmailProcessor.name);
@@ -35,6 +44,9 @@ export class EmailProcessor implements OnModuleInit, OnModuleDestroy {
 
   constructor(private readonly redisClientService: RedisClientService) {}
 
+  /**
+   * Initializes the BullMQ worker and sets up event listeners for job failures and completions.
+   */
   onModuleInit(): void {
     this.worker = new Worker<EmailJobData>(
       EMAIL_QUEUE,
@@ -92,13 +104,16 @@ export class EmailProcessor implements OnModuleInit, OnModuleDestroy {
     );
 
     // ── Completion ──────────────────────────────────────────────────────────
-    this.worker.on('completed', (job: Job<EmailJobData>) => {
+    this.worker.on('completed', (job: Job<Job<EmailJobData>['data']>) => {
       this.logger.debug(`Job #${job.id} completed.`);
     });
 
     this.logger.log('Email worker started.');
   }
 
+  /**
+   * Closes the BullMQ worker when the module is destroyed.
+   */
   async onModuleDestroy(): Promise<void> {
     await this.worker?.close();
     this.logger.log('Email worker shut down.');

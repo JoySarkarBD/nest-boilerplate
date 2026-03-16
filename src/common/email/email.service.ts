@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Email service handling the enqueuing of email jobs to the BullMQ queue.
+ * This service allows for both single and bulk email operations, delegating the
+ * actual transmission to background workers.
+ */
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { SendEmailDto } from './dto/send-email.dto';
@@ -19,18 +24,30 @@ const JOB_OPTIONS = {
   removeOnFail: false, // keep failed jobs visible in BullMQ dashboard
 };
 
+/**
+ * EmailService provides methods to enqueue email jobs for background processing.
+ * It integrates with BullMQ to handle retries and background task execution.
+ */
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
 
+  /**
+   * Initializes the EmailService with a reference to the email queue.
+   *
+   * @param emailQueue - The BullMQ queue instance used for enqueuing jobs.
+   */
   constructor(
     @Inject(EMAIL_QUEUE)
     private readonly emailQueue: Queue<EmailJobData>,
   ) {}
 
   /**
-   * Enqueue a single email (or fan out one job per recipient if `to` is an array).
-   * Returns immediately — the actual send happens in the background worker.
+   * Enqueues a single email (or fans out one job per recipient if `to` is an array).
+   * The method returns immediately while the actual transmission happens asynchronously.
+   *
+   * @param dto - Data Transfer Object containing email details (recipients, subject, content).
+   * @returns A promise resolving to the number of jobs queued and a success message.
    */
   async sendEmail(
     dto: SendEmailDto,
@@ -58,8 +75,11 @@ export class EmailService {
   }
 
   /**
-   * Enqueue multiple independent email messages at once.
+   * Enqueues multiple independent email messages at once.
    * Each DTO can target a single address or an array of addresses.
+   *
+   * @param dtos - An array of SendEmailDto objects.
+   * @returns A promise resolving to the total number of jobs queued and a success message.
    */
   async sendBulkEmail(
     dtos: SendEmailDto[],

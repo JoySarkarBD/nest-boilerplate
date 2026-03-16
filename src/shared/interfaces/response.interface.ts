@@ -9,12 +9,21 @@
 /**
  * Envelope returned by service methods to carry a custom message alongside the payload.
  * The global ResponseInterceptor unwraps this into the standard ServiceResponse shape.
+ *
+ * @template T - The type of the data payload.
  */
 export interface ServicePayload<T = any> {
+  /** Human-readable message describing the outcome. */
   message: string;
+  /** The actual data returned by the service. */
   data: T;
 }
 
+/**
+ * The final structure of every API response, whether success or failure.
+ *
+ * @template T - The type of the data payload on success.
+ */
 export interface ServiceResponse<T = any> {
   /** Whether the request completed without error. */
   success: boolean;

@@ -12,7 +12,10 @@ import { BadRequestException } from '@nestjs/common';
 import sizeOf from 'image-size';
 import { ImageSafetyOptions } from '../types/file-upload.types';
 
-/** Conservative defaults that block all known attack patterns. */
+/**
+ * Conservative defaults that block all known attack patterns.
+ * These values are used if no custom thresholds are provided.
+ */
 const DEFAULTS = {
   maxWidth: 8_192, // 8K horizontal
   maxHeight: 8_192, // 8K vertical

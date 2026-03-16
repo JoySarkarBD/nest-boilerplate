@@ -9,6 +9,9 @@ import { Global, Module } from '@nestjs/common';
 import { RedisTokenService } from './redis-service/auth/redis-token.service';
 import { RedisClientService } from './redis.client';
 
+/**
+ * Global Redis module that provides and exports Redis infrastructure services.
+ */
 @Global()
 @Module({
   /**

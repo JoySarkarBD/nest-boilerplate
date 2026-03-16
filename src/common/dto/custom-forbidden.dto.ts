@@ -4,7 +4,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
-/** Swagger schema for 403 Forbidden responses. */
+/**
+ * Represents a 403 Forbidden error response.
+ * This DTO defines the structure of the response returned when a user attempts to
+ * access a resource they do not have permission for.
+ */
 export class CustomForbiddenDto {
   @ApiProperty({ example: false })
   success!: boolean;

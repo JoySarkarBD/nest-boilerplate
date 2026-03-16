@@ -5,7 +5,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { SuccessResponseDto } from 'src/common/dto/success-response.dto';
 import { Methods } from 'src/common/enum/methods.enum';
 
-/** Swagger 201 success response shape for POST /api/test/email/send. */
+/**
+ * Represents a 201 Created success response for a single email send request.
+ * This DTO documents the structure of the response returned when an email is successfully enqueued.
+ */
 export class MailSendSuccessResponseDto extends SuccessResponseDto<any> {
   @ApiProperty({ example: 'Email sent successfully' })
   declare message: string;
@@ -23,7 +26,10 @@ export class MailSendSuccessResponseDto extends SuccessResponseDto<any> {
   declare data: { queued: number };
 }
 
-/** Swagger 201 success response shape for POST /api/test/email/send-bulk. */
+/**
+ * Represents a 201 Created success response for a bulk email send request.
+ * This DTO documents the structure of the response returned when multiple emails are successfully enqueued.
+ */
 export class MailSendBulkSuccessResponseDto extends SuccessResponseDto<any> {
   @ApiProperty({ example: 'Bulk emails queued successfully' })
   declare message: string;

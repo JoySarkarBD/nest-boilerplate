@@ -5,6 +5,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { CustomInternalServerErrorDto } from 'src/common/dto/custom-internal-server-error.dto';
 import { Methods } from 'src/common/enum/methods.enum';
 
+/**
+ * Represents a 500 Internal Server Error response for single file upload.
+ */
 export class FileUploadSingleInternalErrorDto extends CustomInternalServerErrorDto {
   @ApiProperty({ example: 'Internal server error' })
   declare message: string;
@@ -16,6 +19,9 @@ export class FileUploadSingleInternalErrorDto extends CustomInternalServerErrorD
   declare endpoint: string;
 }
 
+/**
+ * Represents a 500 Internal Server Error response for multiple files upload.
+ */
 export class FileUploadMultipleInternalErrorDto extends CustomInternalServerErrorDto {
   @ApiProperty({ example: 'Internal server error' })
   declare message: string;

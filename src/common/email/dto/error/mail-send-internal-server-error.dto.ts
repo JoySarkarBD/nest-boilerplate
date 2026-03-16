@@ -5,7 +5,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { CustomInternalServerErrorDto } from 'src/common/dto/custom-internal-server-error.dto';
 import { Methods } from 'src/common/enum/methods.enum';
 
-/** Swagger 500 response shape for POST /api/test/email/send. */
+/**
+ * Represents a 500 Internal Server Error response for a single email send request.
+ * It is used for Swagger documentation to show the expected error shape.
+ */
 export class MailSendInternalServerErrorDto extends CustomInternalServerErrorDto {
   @ApiProperty({ example: 'Failed to send email' })
   declare message: string;
@@ -17,7 +20,10 @@ export class MailSendInternalServerErrorDto extends CustomInternalServerErrorDto
   declare endpoint: string;
 }
 
-/** Swagger 500 response shape for POST /api/test/email/send-bulk. */
+/**
+ * Represents a 500 Internal Server Error response for a bulk email send request.
+ * It is used for Swagger documentation to show the expected error shape.
+ */
 export class MailSendBulkInternalServerErrorDto extends CustomInternalServerErrorDto {
   @ApiProperty({ example: 'Failed to send bulk emails' })
   declare message: string;

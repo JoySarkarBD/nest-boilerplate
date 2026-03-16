@@ -4,7 +4,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
-/** Swagger schema for 409 Conflict responses. */
+/**
+ * Represents a 409 Conflict error response.
+ * This DTO is used to document the response structure in Swagger when a resource conflict occurs.
+ */
 export class CustomConflictDto {
   @ApiProperty({ example: false })
   success!: boolean;

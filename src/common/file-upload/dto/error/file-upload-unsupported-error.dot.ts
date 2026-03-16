@@ -5,6 +5,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { CustomUnsupportedMediaTypeDto } from 'src/common/dto/custom-unsupported-media-type.dto';
 import { Methods } from 'src/common/enum/methods.enum';
 
+/**
+ * Represents a 415 Unsupported Media Type error response for single file upload.
+ */
 export class FileUploadUnsupportedErrorDto extends CustomUnsupportedMediaTypeDto {
   @ApiProperty({ example: Methods.POST, enum: Methods })
   declare method: Methods;
@@ -19,6 +22,9 @@ export class FileUploadUnsupportedErrorDto extends CustomUnsupportedMediaTypeDto
   declare message: string;
 }
 
+/**
+ * Represents a 415 Unsupported Media Type error response for multiple files upload.
+ */
 export class FileMultipleUnsupportedErrorDto extends CustomUnsupportedMediaTypeDto {
   @ApiProperty({ example: Methods.POST, enum: Methods })
   declare method: Methods;

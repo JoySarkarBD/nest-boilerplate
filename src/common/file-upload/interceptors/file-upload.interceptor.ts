@@ -1,8 +1,7 @@
 /**
- * @fileoverview `ValidatedFileInterceptor` — single file upload factory.
- *
- * Combines multer (memory storage) + content-type validation + image safety
- * into one reusable interceptor. Apply it with `@UseInterceptors(...)`.
+ * @fileoverview Interceptor factory for handling single file uploads in the NestJS application.
+ * It combines Multer with custom validation for MIME types (via magic bytes) and image safety
+ * (preventing pixel floods, image bombs, etc.).
  */
 import {
   BadRequestException,
@@ -24,12 +23,15 @@ import { validateImageSafety } from '../utils/image-safety.util';
 const DEFAULT_MAX_SIZE = 5 * 1024 * 1024;
 
 /**
- * Runs multer as a Promise so it can be awaited inside an interceptor.
+ * Executes Multer to process a single file upload as a Promise.
  *
- * @param req       - Express request
- * @param res       - Express response
- * @param fieldName - Form field name
- * @param maxSize   - Max file size in bytes
+ * @param req - The Express request object.
+ * @param res - The Express response object.
+ * @param fieldName - The name of the multipart form field containing the file.
+ * @param maxSize - The maximum allowed file size in bytes.
+ * @returns A Promise that resolves when the upload is complete or rejects on error.
+ * @throws PayloadTooLargeException if the file exceeds the size limit.
+ * @throws BadRequestException if another upload error occurs.
  */
 function runMulter(
   req: Request,
@@ -63,8 +65,12 @@ function runMulter(
 }
 
 /**
- * Validates a single `Express.Multer.File` against the provided options.
- * Runs MIME magic-byte check first, then image safety checks if applicable.
+ * Validates an individual file against the provided options.
+ * This includes checking magic bytes for MIME types and pixel safety for images.
+ *
+ * @param file - The file object provided by Multer.
+ * @param options - The validation options to apply.
+ * @throws BadRequestException if validation fails for MIME type or image safety.
  */
 function validateFile(
   file: Express.Multer.File,
@@ -82,10 +88,11 @@ function validateFile(
 }
 
 /**
- * Factory that creates a NestJS interceptor for a **single** file upload.
+ * Factory that creates a NestJS interceptor for handling a **single** file upload.
  *
- * @param fieldName - The multipart form field name (e.g. `'avatar'`).
- * @param options   - Validation options (size limit, MIME types, image safety).
+ * @param fieldName - The multipart form field name (e.g., 'avatar').
+ * @param options - Validation options including size limits, allowed MIME types, and image safety.
+ * @returns A dynamically created interceptor class.
  *
  * @example
  * ```ts
@@ -102,8 +109,18 @@ export function ValidatedFileInterceptor(
   fieldName: string,
   options: FileUploadOptions = {},
 ) {
+  /**
+   * Internal interceptor class that handles the single file upload logic.
+   */
   @Injectable()
   class FileInterceptorMixin implements NestInterceptor {
+    /**
+     * Intercepts the request to process a single file upload and validate its content.
+     *
+     * @param context - The execution context of the request.
+     * @param next - The next handler in the request lifecycle.
+     * @returns An observable that continues the request processing.
+     */
     async intercept(
       context: ExecutionContext,
       next: CallHandler,

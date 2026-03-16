@@ -4,7 +4,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
-/** Represents a single field-level validation failure. */
+/**
+ * Represents a single field-level validation failure.
+ * It contains the name of the invalid field and a descriptive error message.
+ */
 export class FieldErrorDto {
   @ApiProperty({ example: 'name' })
   field!: string;
@@ -13,7 +16,10 @@ export class FieldErrorDto {
   message!: string;
 }
 
-/** Swagger schema for a 400 Bad Request validation error response. */
+/**
+ * Represents a 400 Bad Request response specifically for validation failures.
+ * This DTO includes an array of `FieldErrorDto` to pinpoint multiple validation issues.
+ */
 export class ValidationErrorResponseDto {
   @ApiProperty({ example: false })
   success!: boolean;

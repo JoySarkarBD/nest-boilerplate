@@ -1,6 +1,7 @@
 /**
  * @fileoverview BulkValidationPipe — validates an array of `SendEmailDto` items.
  * Throws a structured 400 with per-item `{ index, field, message }` errors.
+ * This pipe ensures that bulk operations receive valid data for each entry.
  */
 import {
   ArgumentMetadata,
@@ -12,10 +13,21 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { SendEmailDto } from 'src/common/email/dto/send-email.dto';
 
-/** Validates each item in a bulk request body against `SendEmailDto`. */
+/**
+ * BulkValidationPipe handles the validation of an array of objects against a specific DTO.
+ * It is specifically designed for bulk email operations, ensuring each item in the array
+ * adheres to the SendEmailDto validation rules.
+ */
 @Injectable()
 export class BulkValidationPipe implements PipeTransform {
-  /** @throws BadRequestException with `{ index, field, message }` errors if any item is invalid. */
+  /**
+   * Transforms and validates the input value.
+   *
+   * @param value - The raw input value, expected to be an array of email payloads.
+   * @param _metadata - Metadata about the currently processed argument.
+   * @returns The validated array if all items pass validation.
+   * @throws BadRequestException if the input is not an array, is empty, or contains invalid items.
+   */
   async transform(
     value: unknown,
     _metadata: ArgumentMetadata,

@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Data Transfer Object for email transmission.
+ * Defines the structure and validation rules for outgoing emails within the system.
+ */
 import { ApiProperty } from '@nestjs/swagger';
 import {
   ArrayNotEmpty,
@@ -8,10 +12,14 @@ import {
   ValidateIf,
 } from 'class-validator';
 
+/**
+ * SendEmailDto defines the parameters required for sending an email.
+ * It supports both single and multiple recipients and includes validation for all fields.
+ */
 export class SendEmailDto {
   /**
-   * Single recipient address OR an array for bulk send.
-   * Validated as a proper e-mail format.
+   * The recipient's email address or an array of email addresses for bulk sending.
+   * Each address must be in a valid email format.
    */
   @ApiProperty({
     description:
@@ -33,28 +41,40 @@ export class SendEmailDto {
   @IsEmail({}, { each: true })
   to!: string | string[];
 
+  /**
+   * The subject line of the email.
+   */
   @ApiProperty({
+    description: 'The subject line of the email.',
     type: String,
-    example: 'Test Email',
+    example: 'Welcome to our platform!',
     required: true,
   })
   @IsString()
   subject!: string;
 
-  /** Caller-supplied HTML body. You are responsible for building the HTML string. */
+  /**
+   * The HTML content of the email body.
+   * Use this for rich-text email content.
+   */
   @ApiProperty({
+    description: 'The HTML body of the email.',
     type: String,
-    example: 'Test Email',
+    example: '<h1>Welcome!</h1><p>We are glad to have you.</p>',
     required: false,
   })
   @IsOptional()
   @IsString()
   html?: string;
 
-  /** Plain-text fallback. */
+  /**
+   * The plain-text fallback content for the email body.
+   * This is shown if the recipient's email client doesn't support HTML.
+   */
   @ApiProperty({
+    description: 'The plain-text body of the email for non-HTML clients.',
     type: String,
-    example: 'Test Email',
+    example: 'Welcome! We are glad to have you.',
     required: false,
   })
   @IsOptional()

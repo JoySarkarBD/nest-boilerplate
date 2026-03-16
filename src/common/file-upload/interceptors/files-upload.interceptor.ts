@@ -1,8 +1,7 @@
 /**
- * @fileoverview `ValidatedFilesInterceptor` — multiple file upload factory.
- *
- * Like `ValidatedFileInterceptor` but handles an array of files
- * on a single field. Each file is validated independently.
+ * @fileoverview Interceptor factory for handling multiple file uploads in the NestJS application.
+ * It integrates Multer for multipart form-data processing and provides custom validation
+ * for MIME types and image safety.
  */
 import {
   BadRequestException,
@@ -27,13 +26,16 @@ const DEFAULT_MAX_SIZE = 5 * 1024 * 1024;
 const DEFAULT_MAX_FILES = 10;
 
 /**
- * Runs multer for multiple files as a Promise.
+ * Executes Multer to process an array of files as a Promise.
  *
- * @param req       - Express request
- * @param res       - Express response
- * @param fieldName - Form field name
- * @param maxSize   - Max size per file in bytes
- * @param maxFiles  - Max number of files allowed
+ * @param req - The Express request object.
+ * @param res - The Express response object.
+ * @param fieldName - The name of the multipart form field containing the files.
+ * @param maxSize - The maximum allowed size for each file in bytes.
+ * @param maxFiles - The maximum number of files allowed in the request.
+ * @returns A Promise that resolves when the upload is complete or rejects on error.
+ * @throws PayloadTooLargeException if a file exceeds the size limit.
+ * @throws BadRequestException if the file count exceeds the limit or another upload error occurs.
  */
 function runMulterArray(
   req: Request,
@@ -78,7 +80,11 @@ function runMulterArray(
 }
 
 /**
- * Validates a single file against options. Used per-file inside the array loop.
+ * Validates an individual file against the provided options.
+ *
+ * @param file - The file object provided by Multer.
+ * @param options - The validation options to apply to the file.
+ * @throws BadRequestException if validation fails for MIME type or image safety.
  */
 function validateFile(
   file: Express.Multer.File,
@@ -94,11 +100,12 @@ function validateFile(
 }
 
 /**
- * Factory that creates a NestJS interceptor for **multiple** file uploads.
+ * Factory that creates a NestJS interceptor for handling **multiple** file uploads.
  *
- * @param fieldName - The multipart form field name (e.g. `'photos'`).
- * @param options   - Validation options (size limit, MIME types, image safety).
- * @param maxFiles  - Maximum number of files allowed per request. Default: `10`.
+ * @param fieldName - The multipart form field name (e.g., 'photos').
+ * @param options - Validation options including size limits, allowed MIME types, and image safety.
+ * @param maxFiles - Maximum number of files allowed per request. Defaults to 10.
+ * @returns A dynamically created interceptor class.
  *
  * @example
  * ```ts
@@ -116,8 +123,18 @@ export function ValidatedFilesInterceptor(
   options: FileUploadOptions = {},
   maxFiles = DEFAULT_MAX_FILES,
 ) {
+  /**
+   * Internal interceptor class that implements the multiple file upload logic.
+   */
   @Injectable()
   class FilesInterceptorMixin implements NestInterceptor {
+    /**
+     * Intercepts the request to handle multiple file uploads and perform validation.
+     *
+     * @param context - The execution context of the request.
+     * @param next - The next handler in the request lifecycle.
+     * @returns An observable that continues the request processing.
+     */
     async intercept(
       context: ExecutionContext,
       next: CallHandler,

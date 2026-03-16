@@ -4,7 +4,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
-/** Swagger schema for 415 Unsupported Media Type responses. */
+/**
+ * Represents a 415 Unsupported Media Type error response.
+ * This DTO defines the structure of the response returned when the client sends
+ * a payload with a format that the server does not support.
+ */
 export class CustomUnsupportedMediaTypeDto {
   @ApiProperty({ example: false })
   success!: boolean;

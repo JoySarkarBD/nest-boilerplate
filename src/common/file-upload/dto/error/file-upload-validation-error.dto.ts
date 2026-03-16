@@ -4,6 +4,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from 'src/common/enum/methods.enum';
 
+/**
+ * Represents a 413 Payload Too Large error response when a single file upload exceeds the size limit.
+ */
 export class FileUploadPayloadTooLargeDto {
   @ApiProperty({ example: false })
   success: boolean;
@@ -27,11 +30,17 @@ export class FileUploadPayloadTooLargeDto {
   error: string;
 }
 
+/**
+ * Represents a 413 Payload Too Large error response when multiple file uploads exceed the size limit.
+ */
 export class FileUploadPayloadTooLargeMultipleDto extends FileUploadPayloadTooLargeDto {
   @ApiProperty({ example: '/api/test/file-upload/multiple' })
   declare endpoint: string;
 }
 
+/**
+ * Represents a 415 Unsupported Media Type error response when a single uploaded file has an invalid type.
+ */
 export class FileUploadUnsupportedMediaTypeDto {
   @ApiProperty({ example: false })
   success: boolean;
@@ -58,6 +67,9 @@ export class FileUploadUnsupportedMediaTypeDto {
   error: string;
 }
 
+/**
+ * Represents a 415 Unsupported Media Type error response when one or more files in a multiple upload have invalid types.
+ */
 export class FileUploadUnsupportedMediaTypeMultipleDto extends FileUploadUnsupportedMediaTypeDto {
   @ApiProperty({ example: '/api/test/file-upload/multiple' })
   declare endpoint: string;

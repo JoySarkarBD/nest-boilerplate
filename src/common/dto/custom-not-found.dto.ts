@@ -4,7 +4,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
-/** Swagger schema for 404 Not Found responses. */
+/**
+ * Represents a 404 Not Found error response.
+ * This DTO defines the structure of the response returned when a requested resource
+ * cannot be located on the server.
+ */
 export class CustomNotFoundDto {
   @ApiProperty({ example: false })
   success!: boolean;

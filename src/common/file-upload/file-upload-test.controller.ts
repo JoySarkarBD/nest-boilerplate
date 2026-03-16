@@ -1,6 +1,7 @@
 /**
  * @fileoverview Test controller for the file upload interceptor.
- * Demonstrates single and multiple file uploads with validation and Swagger docs.
+ * Demonstrates single and multiple file uploads with validation and Swagger documentation.
+ * This controller serves as a practical example for implementing secure file uploads.
  */
 import {
   Controller,
@@ -29,12 +30,20 @@ import {
 } from './dto/success/file-upload-success.dto';
 import { ValidatedFileInterceptor, ValidatedFilesInterceptor } from './index';
 
+/**
+ * FileUploadTestController provides endpoints to test the boilerplate's file upload capabilities.
+ * It showcases how to use custom interceptors for single and multiple file uploads with
+ * built-in MIME type and image safety validations.
+ */
 @ApiTags('File Upload Test')
 @Controller('test/file-upload')
 export class FileUploadTestController {
   /**
-   * Test endpoint for single file upload (e.g., an avatar).
-   * Validates MIME type and prevents image attacks.
+   * Handles single file uploads (e.g., a user avatar).
+   * Validates the file's MIME type and checks for potential image-based attacks.
+   *
+   * @param file - The uploaded file object provided by the ValidatedFileInterceptor.
+   * @returns A success response containing the uploaded file's metadata.
    */
   @Post('single')
   @ApiOperation({ summary: 'Upload a single image file' })
@@ -83,8 +92,11 @@ export class FileUploadTestController {
   }
 
   /**
-   * Test endpoint for multiple file uploads (e.g., a gallery).
-   * Validates each file independently.
+   * Handles multiple file uploads (e.g., a photo gallery).
+   * Validates each file independently using the ValidatedFilesInterceptor.
+   *
+   * @param files - An array of uploaded file objects.
+   * @returns A success response containing metadata for each uploaded file.
    */
   @Post('multiple')
   @ApiOperation({ summary: 'Upload multiple image files' })

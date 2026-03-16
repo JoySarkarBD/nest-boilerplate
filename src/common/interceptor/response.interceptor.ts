@@ -1,6 +1,7 @@
 /**
- * @fileoverview Global response interceptor for the API Gateway.
- * Wraps all outgoing responses in a standardised ServiceResponse envelope.
+ * @fileoverview Global response interceptor for the NestJS application.
+ * Intercepts all outgoing responses to ensure they conform to a standardized
+ * ServiceResponse envelope format, providing consistency across all API endpoints.
  */
 import {
   CallHandler,
@@ -13,14 +14,18 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ServiceResponse } from 'src/shared/interfaces/response.interface';
 
+/**
+ * ResponseInterceptor wraps outgoing data in a standardized JSON response format.
+ * It manages common response fields like success status, message, method, and endpoint.
+ */
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
   /**
    * Intercepts outgoing responses and wraps them in a ServiceResponse envelope.
    *
-   * @param context - The execution context of the request
-   * @param next - The next handler in the request pipeline
-   * @returns An Observable of ServiceResponse
+   * @param context - The execution context of the request, providing access to request and response objects.
+   * @param next - The next handler in the request pipeline to trigger the response emission.
+   * @returns An Observable that emits the transformed ServiceResponse.
    */
   intercept(
     context: ExecutionContext,
@@ -87,7 +92,10 @@ export class ResponseInterceptor implements NestInterceptor {
   }
 
   /**
-   * Type guard: checks if value matches minimal ServiceResponse shape
+   * Type guard to check if a value matches the minimal ServiceResponse shape.
+   *
+   * @param value - The value to check for compatibility with ServiceResponse.
+   * @returns True if the value matches the ServiceResponse structure, false otherwise.
    */
   private isServiceResponse(value: unknown): value is ServiceResponse {
     return (
@@ -100,7 +108,10 @@ export class ResponseInterceptor implements NestInterceptor {
   }
 
   /**
-   * Safely extract message & actual payload
+   * Safely extracts a message and the actual payload from the response data.
+   *
+   * @param data - The raw response data emitted by the controller.
+   * @returns An object containing the extracted message and payload.
    */
   private extractMessageAndPayload(data: unknown): {
     message: string;

@@ -1,6 +1,7 @@
 /**
  * @fileoverview `ApiErrorResponses` — composite Swagger decorator for error responses.
- * Apply it on a controller method to document all relevant error status codes in one call.
+ * This decorator provides a convenient way to document multiple potential error status
+ * codes for a single API endpoint in the NestJS application.
  */
 import { applyDecorators, Type } from '@nestjs/common';
 import {
@@ -23,7 +24,10 @@ import { ValidationErrorResponseDto } from '../dto/validation-error.dto';
 import { CustomUnsupportedMediaTypeDto } from '../dto/custom-unsupported-media-type.dto';
 import { FileUploadPayloadTooLargeDto } from '../file-upload/dto/error/file-upload-validation-error.dto';
 
-/** Map of optional error DTOs. Omit a key to skip that status code in Swagger docs. */
+/**
+ * Interface representing the map of optional error DTOs for different HTTP status codes.
+ * Each key corresponds to a specific error scenario that can be documented in Swagger.
+ */
 interface ErrorDtoMap {
   /** 400 Bad Request — validation errors. */
   validation?:
@@ -31,49 +35,49 @@ interface ErrorDtoMap {
     | ((...args: any[]) => any)
     | [(...args: any[]) => any]
     | string;
-  /** 401 Unauthorized. */
+  /** 401 Unauthorized — authentication failure. */
   unauthorized?:
     | Type<unknown>
     | ((...args: any[]) => any)
     | [(...args: any[]) => any]
     | string;
-  /** 403 Forbidden. */
+  /** 403 Forbidden — authorization failure. */
   forbidden?:
     | Type<unknown>
     | ((...args: any[]) => any)
     | [(...args: any[]) => any]
     | string;
-  /** 404 Not Found. */
+  /** 404 Not Found — resource not found. */
   notFound?:
     | Type<unknown>
     | ((...args: any[]) => any)
     | [(...args: any[]) => any]
     | string;
-  /** 409 Conflict. */
+  /** 409 Conflict — resource state conflict. */
   conflict?:
     | Type<unknown>
     | ((...args: any[]) => any)
     | [(...args: any[]) => any]
     | string;
-  /** 413 Payload Too Large. */
+  /** 413 Payload Too Large — request entity too large. */
   payloadTooLarge?:
     | Type<unknown>
     | ((...args: any[]) => any)
     | [(...args: any[]) => any]
     | string;
-  /** 415 Unsupported Media Type. */
+  /** 415 Unsupported Media Type — media type not supported. */
   unsupported?:
     | Type<unknown>
     | ((...args: any[]) => any)
     | [(...args: any[]) => any]
     | string;
-  /** 500 Internal Server Error. */
+  /** 500 Internal Server Error — unexpected server error. */
   internal?:
     | Type<unknown>
     | ((...args: any[]) => any)
     | [(...args: any[]) => any]
     | string;
-  /** 429 Too Many Requests. */
+  /** 429 Too Many Requests — rate limiting. */
   throttle?:
     | Type<unknown>
     | ((...args: any[]) => any)
@@ -83,8 +87,10 @@ interface ErrorDtoMap {
 
 /**
  * Composite decorator that registers multiple Swagger error-response schemas at once.
+ * It simplifies controller methods by grouping standard error responses into a single decorator call.
  *
- * @param dtos - Map of error types to their Swagger DTO classes.
+ * @param dtos - A map of error types to their respective Swagger DTO classes or descriptions.
+ * @returns A composite decorator combining all specified Swagger error responses.
  *
  * @example
  * ```ts

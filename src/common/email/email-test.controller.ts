@@ -23,6 +23,10 @@ import {
 } from './dto/success/mail-send-success.dto';
 import { BulkValidationPipe } from '../pipes/bulk-validation.pipe';
 
+/**
+ * EmailTestController provides endpoints to test the background email sending functionality.
+ * It allows for sending single and bulk emails to verify the integration with BullMQ and Nodemailer.
+ */
 @ApiTags('Email Test')
 @Controller('test/email')
 export class EmailTestController {

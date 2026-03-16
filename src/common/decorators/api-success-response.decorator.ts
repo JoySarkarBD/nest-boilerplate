@@ -1,15 +1,19 @@
 /**
  * @fileoverview `ApiSuccessResponse` — composite Swagger decorator for 2xx success responses.
+ * This decorator provides a standardized way to document successful API responses
+ * and their associated data models in Swagger.
  */
 import { applyDecorators, HttpStatus, Type } from '@nestjs/common';
 import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 
 /**
  * Documents a successful API response in Swagger using the provided DTO model.
+ * It automatically handles single objects and arrays of the specified model.
  *
- * @param model - DTO class decorated with Swagger decorators.
- * @param status - HTTP status code (default: 200).
- * @param isArray - Set to `true` when the response data is an array.
+ * @param model - The DTO class used to describe the response data structure.
+ * @param status - The HTTP status code indicating success (default: 200 OK).
+ * @param isArray - A boolean flag indicating if the response data is an array (default: false).
+ * @returns A composite decorator combining the necessary Swagger response metadata.
  *
  * @example
  * ```ts

@@ -13,6 +13,10 @@ import {
 } from '../../common/throttles/base-throttle.guard';
 import { FORGOT_PASSWORD } from './auth-throttle.constants';
 
+/**
+ * Throttle guard for the forgot-password endpoint.
+ * Ensures that a single device cannot flood the system with password reset requests.
+ */
 @Injectable()
 export class ForgotThrottleGuard extends BaseThrottleGuard {
   constructor(redis: RedisClientService) {

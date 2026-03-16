@@ -6,7 +6,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { RedisClientService } from '../../redis.client';
 import { REDIS_TOKEN_PREFIX } from '../../constants/auth/auth.constants';
 
-/** Stores, retrieves, and deletes JWT tokens in Redis with a scoped key prefix. */
+/**
+ * RedisTokenService manages the lifecycle of JWT authentication tokens in Redis.
+ * It provides methods for storing, retrieving, and invalidating tokens with
+ * automatic TTL (Time-To-Live) management.
+ */
 @Injectable()
 export class RedisTokenService {
   private readonly logger = new Logger(RedisTokenService.name);

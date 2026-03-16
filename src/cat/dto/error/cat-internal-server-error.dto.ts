@@ -5,7 +5,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { CustomInternalServerErrorDto } from 'src/common/dto/custom-internal-server-error.dto';
 import { Methods } from 'src/common/enum/methods.enum';
 
-/** Swagger 500 response shape for the GET /api/cat endpoint. */
+/**
+ * Represents a 500 Internal Server Error response specifically for the Cat endpoint.
+ * This class extends the generic `CustomInternalServerErrorDto` to provide more context.
+ */
 export class CatInternalErrorResponseDto extends CustomInternalServerErrorDto {
   @ApiProperty({ example: 'Failed to retrieve cat' })
   declare message: string;

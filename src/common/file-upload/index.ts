@@ -1,6 +1,7 @@
 /**
- * @fileoverview Public API barrel for the file-upload module.
- * Import everything from here instead of individual paths.
+ * @fileoverview Barrel module for the file-upload functionality.
+ * This file provides a single entry point for importing file upload interceptors and types,
+ * promoting cleaner imports and modular organization across the application.
  *
  * @example
  * ```ts

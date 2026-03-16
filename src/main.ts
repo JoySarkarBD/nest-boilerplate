@@ -1,10 +1,10 @@
 /**
- * @fileoverview API Gateway bootstrap.
+ * @fileoverview API Gateway bootstrap module.
  *
- * Starts the HTTP server that acts as the single entry-point for all
- * client requests. Registers global middleware (Helmet, Morgan),
- * validation pipes, the response interceptor, and the HTTP exception
- * filter before listening on the configured port.
+ * This is the entry point of the NestJS application. It initializes the NestFactory,
+ * configures global middleware (Helmet for security, Morgan for logging), sets up
+ * global pipes for validation, and registers global interceptors and filters.
+ * It also handles the Swagger documentation setup and starts the HTTP server.
  */
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -17,6 +17,11 @@ import { HttpExceptionFilter } from './common/filter/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptor/response.interceptor';
 import config from './shared/config/app.config';
 
+/**
+ * Initializes and starts the NestJS application.
+ *
+ * @returns A promise that resolves when the application has successfully started.
+ */
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -79,4 +84,6 @@ async function bootstrap() {
     console.log(`📖 Swagger UI available at http://localhost:${port}/api-doc`);
   });
 }
+
+// Execute the bootstrap process
 void bootstrap();

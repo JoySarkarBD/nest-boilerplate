@@ -6,7 +6,10 @@ import type { GetCatResponseDto } from 'src/cat/interfaces/cat.interface';
 import { SuccessResponseDto } from 'src/common/dto/success-response.dto';
 import { Methods } from 'src/common/enum/methods.enum';
 
-/** Swagger 200 success response shape for GET /api/cat. */
+/**
+ * Represents a 200 Success response for the Cat endpoint.
+ * This class inherits from the generic `SuccessResponseDto` to provide a consistent response structure.
+ */
 export class GetCatSuccessResponseDto extends SuccessResponseDto<any> {
   @ApiProperty({ example: 'Cat retrieved successfully' })
   declare message: string;
