@@ -34,19 +34,19 @@ export class HttpExceptionFilter implements ExceptionFilter {
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
     let message = 'Internal server error';
-    let errors: any[] | undefined;
+    let errors: { field: string; message: string }[] | undefined;
     let error: string | undefined;
 
     /* Validation-pipe errors arrive as a raw array */
     if (Array.isArray(exception)) {
       status = HttpStatus.BAD_REQUEST;
       message = 'Validation failed';
-      errors = exception.flatMap((err: any) => {
-        const field: string = err.property;
+      errors = (exception as Record<string, any>[]).flatMap((err) => {
+        const field: string = (err.property as string) || 'unknown';
         const constraints: string[] = err.constraints
-          ? Object.values(err.constraints)
+          ? Object.values(err.constraints as Record<string, string>)
           : ['Invalid value'];
-        return constraints.map((msg) => ({ field, message: msg as string }));
+        return constraints.map((msg) => ({ field, message: msg }));
       });
     } else if (exception instanceof HttpException) {
       const body = exception.getResponse();
@@ -57,15 +57,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
         error = body;
         isRouteNotFound = body.startsWith('Cannot ');
       } else if (body && typeof body === 'object') {
-        const obj = body as Record<string, any>;
-        message = obj.message || message;
-        error = obj.error;
-        errors = obj.errors || errors; // Extract errors if present in body
+        const obj = body as Record<string, unknown>;
+        message = (obj.message as string) || message;
+        error = obj.error as string | undefined;
+        errors =
+          (obj.errors as { field: string; message: string }[] | undefined) ||
+          errors; // Extract errors if present in body
         isRouteNotFound =
           typeof obj.message === 'string' && obj.message.startsWith('Cannot ');
       }
 
-      if (status === HttpStatus.NOT_FOUND && isRouteNotFound) {
+      if (status === (HttpStatus.NOT_FOUND as number) && isRouteNotFound) {
         message = 'Path not found';
         error = 'Path not found';
       }

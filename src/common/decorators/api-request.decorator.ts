@@ -34,16 +34,22 @@ interface SwaggerRequestConfig {
  * @ApiRequestDetails({ params: [{ name: 'id', required: true }], queries: { name: 'search' } })
  * ```
  */
-export function ApiRequestDetails(config: SwaggerRequestConfig): MethodDecorator {
+export function ApiRequestDetails(
+  config: SwaggerRequestConfig,
+): MethodDecorator {
   const decorators: MethodDecorator[] = [];
 
   if (config?.params) {
-    const paramArray = Array.isArray(config.params) ? config.params : [config.params];
+    const paramArray = Array.isArray(config.params)
+      ? config.params
+      : [config.params];
     decorators.push(...paramArray.map((param) => ApiParam(param)));
   }
 
   if (config?.queries) {
-    const queryArray = Array.isArray(config.queries) ? config.queries : [config.queries];
+    const queryArray = Array.isArray(config.queries)
+      ? config.queries
+      : [config.queries];
     decorators.push(...queryArray.map((query) => ApiQuery(query)));
   }
 

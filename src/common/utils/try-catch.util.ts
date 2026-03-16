@@ -15,7 +15,7 @@ import { InternalServerErrorException } from '@nestjs/common';
  * re-thrown as-is to preserve originating error messages.
  */
 export async function tryCatch<T>(
-  fn: () => Promise<T>,
+  fn: () => T | Promise<T>,
   message: string,
 ): Promise<T> {
   try {

@@ -9,4 +9,7 @@
  */
 export { ValidatedFileInterceptor } from './interceptors/file-upload.interceptor';
 export { ValidatedFilesInterceptor } from './interceptors/files-upload.interceptor';
-export type { FileUploadOptions, ImageSafetyOptions } from './types/file-upload.types';
+export type {
+  FileUploadOptions,
+  ImageSafetyOptions,
+} from './types/file-upload.types';

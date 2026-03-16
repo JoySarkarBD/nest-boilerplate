@@ -14,8 +14,8 @@ import {
   mixin,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import * as express from 'express';
-const multer = require('multer');
+import multer from 'multer';
+import type { Request, Response } from 'express';
 import { FileUploadOptions } from '../types/file-upload.types';
 import { validateMimeType } from '../utils/magic-bytes.util';
 import { validateImageSafety } from '../utils/image-safety.util';
@@ -32,8 +32,8 @@ const DEFAULT_MAX_SIZE = 5 * 1024 * 1024;
  * @param maxSize   - Max file size in bytes
  */
 function runMulter(
-  req: any,
-  res: any,
+  req: Request,
+  res: Response,
   fieldName: string,
   maxSize: number,
 ): Promise<void> {
@@ -43,17 +43,21 @@ function runMulter(
   }).single(fieldName);
 
   return new Promise((resolve, reject) => {
-    upload(req, res, (err: any) => {
+    upload(req, res, (err: unknown) => {
       if (!err) return resolve();
 
-      if (err.code === 'LIMIT_FILE_SIZE') {
+      if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
         return reject(
           new PayloadTooLargeException(
             `File exceeds the maximum allowed size of ${(maxSize / 1024 / 1024).toFixed(1)} MB.`,
           ),
         );
       }
-      reject(new BadRequestException(err.message ?? 'File upload failed.'));
+      reject(
+        new BadRequestException(
+          (err as Error)?.message ?? 'File upload failed.',
+        ),
+      );
     });
   });
 }
@@ -62,7 +66,10 @@ function runMulter(
  * Validates a single `Express.Multer.File` against the provided options.
  * Runs MIME magic-byte check first, then image safety checks if applicable.
  */
-function validateFile(file: Express.Multer.File, options: FileUploadOptions): void {
+function validateFile(
+  file: Express.Multer.File,
+  options: FileUploadOptions,
+): void {
   // 1 — MIME / magic-bytes validation
   if (options.allowedMimeTypes?.length) {
     validateMimeType(file, options.allowedMimeTypes);
@@ -101,8 +108,8 @@ export function ValidatedFileInterceptor(
       context: ExecutionContext,
       next: CallHandler,
     ): Promise<Observable<any>> {
-      const req = context.switchToHttp().getRequest();
-      const res = context.switchToHttp().getResponse();
+      const req = context.switchToHttp().getRequest<Request>();
+      const res = context.switchToHttp().getResponse<Response>();
       const maxSize = options.maxSizeBytes ?? DEFAULT_MAX_SIZE;
 
       // Parse the multipart upload
@@ -110,7 +117,7 @@ export function ValidatedFileInterceptor(
 
       // Validate the uploaded file
       if (req.file) {
-        validateFile(req.file as Express.Multer.File, options);
+        validateFile(req.file, options);
       }
 
       return next.handle();

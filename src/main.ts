@@ -9,6 +9,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import type { Request, Response } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { AppModule } from './app.module';
@@ -68,7 +69,7 @@ async function bootstrap() {
   SwaggerModule.setup('api-doc', app, document);
 
   // Optional: serve raw JSON at /api-json
-  app.getHttpAdapter().get('/api-json', (req, res) => {
+  app.getHttpAdapter().get('/api-json', (_req: Request, res: Response) => {
     res.json(document); // use send, not json (sometimes works better for $ref parser)
   });
 
@@ -78,4 +79,4 @@ async function bootstrap() {
     console.log(`📖 Swagger UI available at http://localhost:${port}/api-doc`);
   });
 }
-bootstrap();
+void bootstrap();

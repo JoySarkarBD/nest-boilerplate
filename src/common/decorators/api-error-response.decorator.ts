@@ -2,7 +2,7 @@
  * @fileoverview `ApiErrorResponses` — composite Swagger decorator for error responses.
  * Apply it on a controller method to document all relevant error status codes in one call.
  */
-import { applyDecorators } from '@nestjs/common';
+import { applyDecorators, Type } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -26,23 +26,59 @@ import { FileUploadPayloadTooLargeDto } from '../file-upload/dto/error/file-uplo
 /** Map of optional error DTOs. Omit a key to skip that status code in Swagger docs. */
 interface ErrorDtoMap {
   /** 400 Bad Request — validation errors. */
-  validation?: any;
+  validation?:
+    | Type<unknown>
+    | ((...args: any[]) => any)
+    | [(...args: any[]) => any]
+    | string;
   /** 401 Unauthorized. */
-  unauthorized?: any;
+  unauthorized?:
+    | Type<unknown>
+    | ((...args: any[]) => any)
+    | [(...args: any[]) => any]
+    | string;
   /** 403 Forbidden. */
-  forbidden?: any;
+  forbidden?:
+    | Type<unknown>
+    | ((...args: any[]) => any)
+    | [(...args: any[]) => any]
+    | string;
   /** 404 Not Found. */
-  notFound?: any;
+  notFound?:
+    | Type<unknown>
+    | ((...args: any[]) => any)
+    | [(...args: any[]) => any]
+    | string;
   /** 409 Conflict. */
-  conflict?: any;
+  conflict?:
+    | Type<unknown>
+    | ((...args: any[]) => any)
+    | [(...args: any[]) => any]
+    | string;
   /** 413 Payload Too Large. */
-  payloadTooLarge?: any;
+  payloadTooLarge?:
+    | Type<unknown>
+    | ((...args: any[]) => any)
+    | [(...args: any[]) => any]
+    | string;
   /** 415 Unsupported Media Type. */
-  unsupported?: any;
+  unsupported?:
+    | Type<unknown>
+    | ((...args: any[]) => any)
+    | [(...args: any[]) => any]
+    | string;
   /** 500 Internal Server Error. */
-  internal?: any;
+  internal?:
+    | Type<unknown>
+    | ((...args: any[]) => any)
+    | [(...args: any[]) => any]
+    | string;
   /** 429 Too Many Requests. */
-  throttle?: any;
+  throttle?:
+    | Type<unknown>
+    | ((...args: any[]) => any)
+    | [(...args: any[]) => any]
+    | string;
 }
 
 /**
@@ -59,15 +95,29 @@ export function ApiErrorResponses(dtos: ErrorDtoMap) {
   const decorators: (MethodDecorator & ClassDecorator)[] = [];
 
   if (dtos.validation)
-    decorators.push(ApiBadRequestResponse({ type: dtos.validation || ValidationErrorResponseDto }));
+    decorators.push(
+      ApiBadRequestResponse({
+        type: dtos.validation || ValidationErrorResponseDto,
+      }),
+    );
   if (dtos.unauthorized)
-    decorators.push(ApiUnauthorizedResponse({ type: dtos.unauthorized || CustomUnauthorizedDto }));
+    decorators.push(
+      ApiUnauthorizedResponse({
+        type: dtos.unauthorized || CustomUnauthorizedDto,
+      }),
+    );
   if (dtos.forbidden)
-    decorators.push(ApiForbiddenResponse({ type: dtos.forbidden || CustomForbiddenDto }));
+    decorators.push(
+      ApiForbiddenResponse({ type: dtos.forbidden || CustomForbiddenDto }),
+    );
   if (dtos.notFound)
-    decorators.push(ApiNotFoundResponse({ type: dtos.notFound || CustomNotFoundDto }));
+    decorators.push(
+      ApiNotFoundResponse({ type: dtos.notFound || CustomNotFoundDto }),
+    );
   if (dtos.conflict)
-    decorators.push(ApiConflictResponse({ type: dtos.conflict || CustomConflictDto }));
+    decorators.push(
+      ApiConflictResponse({ type: dtos.conflict || CustomConflictDto }),
+    );
   if (dtos.payloadTooLarge)
     decorators.push(
       ApiPayloadTooLargeResponse({
@@ -75,9 +125,17 @@ export function ApiErrorResponses(dtos: ErrorDtoMap) {
       }),
     );
   if (dtos.unsupported)
-    decorators.push(ApiUnsupportedMediaTypeResponse({ type: dtos.unsupported || CustomUnsupportedMediaTypeDto }));
+    decorators.push(
+      ApiUnsupportedMediaTypeResponse({
+        type: dtos.unsupported || CustomUnsupportedMediaTypeDto,
+      }),
+    );
   if (dtos.internal)
-    decorators.push(ApiInternalServerErrorResponse({ type: dtos.internal || CustomInternalServerErrorDto }));
+    decorators.push(
+      ApiInternalServerErrorResponse({
+        type: dtos.internal || CustomInternalServerErrorDto,
+      }),
+    );
   if (dtos.throttle)
     decorators.push(ApiTooManyRequestsResponse({ type: dtos.throttle }));
 

@@ -26,7 +26,7 @@ export function ApiSuccessResponse<TModel extends Type<any>>(
     ApiExtraModels(model),
     ApiResponse({
       status,
-      schema: isArray 
+      schema: isArray
         ? { type: 'array', items: { $ref: getSchemaPath(model) } }
         : { $ref: getSchemaPath(model) },
     }),

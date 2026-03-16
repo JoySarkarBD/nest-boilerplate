@@ -25,9 +25,9 @@ export class SendEmailDto {
       },
     ],
   })
-  @ValidateIf((o) => !Array.isArray(o.to))
+  @ValidateIf((o: SendEmailDto) => !Array.isArray(o.to))
   @IsEmail()
-  @ValidateIf((o) => Array.isArray(o.to))
+  @ValidateIf((o: SendEmailDto) => Array.isArray(o.to))
   @IsArray()
   @ArrayNotEmpty()
   @IsEmail({}, { each: true })

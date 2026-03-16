@@ -14,9 +14,9 @@ import { ImageSafetyOptions } from '../types/file-upload.types';
 
 /** Conservative defaults that block all known attack patterns. */
 const DEFAULTS = {
-  maxWidth: 8_192,           // 8K horizontal
-  maxHeight: 8_192,          // 8K vertical
-  maxPixels: 20_000_000,     // 20 megapixels
+  maxWidth: 8_192, // 8K horizontal
+  maxHeight: 8_192, // 8K vertical
+  maxPixels: 20_000_000, // 20 megapixels
   maxDecompressionRatio: 50, // raw size / file size > 50 = suspicious
 } as const;
 
@@ -38,7 +38,8 @@ export function validateImageSafety(
   const maxWidth = options.maxWidth ?? DEFAULTS.maxWidth;
   const maxHeight = options.maxHeight ?? DEFAULTS.maxHeight;
   const maxPixels = options.maxPixels ?? DEFAULTS.maxPixels;
-  const maxRatio = options.maxDecompressionRatio ?? DEFAULTS.maxDecompressionRatio;
+  const maxRatio =
+    options.maxDecompressionRatio ?? DEFAULTS.maxDecompressionRatio;
 
   let dimensions: { width?: number; height?: number };
 
@@ -47,7 +48,9 @@ export function validateImageSafety(
     dimensions = sizeOf(buffer);
   } catch {
     // Unrecognised or corrupt image format — reject it.
-    throw new BadRequestException('Unable to read image dimensions. The file may be corrupt or malformed.');
+    throw new BadRequestException(
+      'Unable to read image dimensions. The file may be corrupt or malformed.',
+    );
   }
 
   const { width, height } = dimensions;

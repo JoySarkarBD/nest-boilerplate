@@ -19,7 +19,11 @@ export class RedisTokenService {
    * @param token - The JWT string to store.
    * @param ttlSeconds - Expiry time in seconds.
    */
-  async storeToken(tokenId: string, token: string, ttlSeconds: number): Promise<void> {
+  async storeToken(
+    tokenId: string,
+    token: string,
+    ttlSeconds: number,
+  ): Promise<void> {
     const key = REDIS_TOKEN_PREFIX + tokenId;
     this.logger.debug(`Storing token key=${key} ttl=${ttlSeconds}s`);
     await this.redisClient.getClientAuth().set(key, token, 'EX', ttlSeconds);

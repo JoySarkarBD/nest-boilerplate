@@ -10,15 +10,15 @@ import { GetCatResponseDto } from './interfaces/cat.interface';
 export class CatService {
   /** Returns a sample cat payload. */
   async getCat(): Promise<ServicePayload<GetCatResponseDto>> {
-    return tryCatch(async () => {
-      const cat = null as any;
+    return tryCatch(() => {
+      const cat: GetCatResponseDto = {
+        name: 'Milo',
+        breed: 'Ragdoll',
+      };
 
       return {
         message: 'Cat retrieved successfully',
-        data: {
-          name: cat.name,
-          breed: cat.breed,
-        },
+        data: cat,
       };
     }, 'Failed to retrieve cat');
   }

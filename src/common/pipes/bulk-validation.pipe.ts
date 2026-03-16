@@ -16,7 +16,10 @@ import { SendEmailDto } from 'src/common/email/dto/send-email.dto';
 @Injectable()
 export class BulkValidationPipe implements PipeTransform {
   /** @throws BadRequestException with `{ index, field, message }` errors if any item is invalid. */
-  async transform(value: any, metadata: ArgumentMetadata) {
+  async transform(
+    value: unknown,
+    _metadata: ArgumentMetadata,
+  ): Promise<unknown> {
     if (!Array.isArray(value)) {
       throw new BadRequestException({
         message: 'Validation failed',

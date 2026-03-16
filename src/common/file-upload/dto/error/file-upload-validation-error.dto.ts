@@ -36,7 +36,10 @@ export class FileUploadUnsupportedMediaTypeDto {
   @ApiProperty({ example: false })
   success: boolean;
 
-  @ApiProperty({ example: 'File type "application/octet-stream" is not allowed. Allowed: image/jpeg, image/png.' })
+  @ApiProperty({
+    example:
+      'File type "application/octet-stream" is not allowed. Allowed: image/jpeg, image/png.',
+  })
   message: string;
 
   @ApiProperty({ example: 'POST', enum: Methods })

@@ -14,8 +14,8 @@ import {
   mixin,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import * as express from 'express';
-const multer = require('multer');
+import multer from 'multer';
+import type { Request, Response } from 'express';
 import { FileUploadOptions } from '../types/file-upload.types';
 import { validateMimeType } from '../utils/magic-bytes.util';
 import { validateImageSafety } from '../utils/image-safety.util';
@@ -36,8 +36,8 @@ const DEFAULT_MAX_FILES = 10;
  * @param maxFiles  - Max number of files allowed
  */
 function runMulterArray(
-  req: any,
-  res: any,
+  req: Request,
+  res: Response,
   fieldName: string,
   maxSize: number,
   maxFiles: number,
@@ -48,22 +48,31 @@ function runMulterArray(
   }).array(fieldName, maxFiles);
 
   return new Promise((resolve, reject) => {
-    upload(req, res, (err: any) => {
+    upload(req, res, (err: unknown) => {
       if (!err) return resolve();
 
-      if (err.code === 'LIMIT_FILE_SIZE') {
+      if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
         return reject(
           new PayloadTooLargeException(
             `One or more files exceed the maximum allowed size of ${(maxSize / 1024 / 1024).toFixed(1)} MB.`,
           ),
         );
       }
-      if (err.code === 'LIMIT_FILE_COUNT') {
+      if (
+        err instanceof multer.MulterError &&
+        err.code === 'LIMIT_FILE_COUNT'
+      ) {
         return reject(
-          new BadRequestException(`Too many files. Maximum allowed: ${maxFiles}.`),
+          new BadRequestException(
+            `Too many files. Maximum allowed: ${maxFiles}.`,
+          ),
         );
       }
-      reject(new BadRequestException(err.message ?? 'File upload failed.'));
+      reject(
+        new BadRequestException(
+          (err as Error)?.message ?? 'File upload failed.',
+        ),
+      );
     });
   });
 }
@@ -71,7 +80,10 @@ function runMulterArray(
 /**
  * Validates a single file against options. Used per-file inside the array loop.
  */
-function validateFile(file: Express.Multer.File, options: FileUploadOptions): void {
+function validateFile(
+  file: Express.Multer.File,
+  options: FileUploadOptions,
+): void {
   if (options.allowedMimeTypes?.length) {
     validateMimeType(file, options.allowedMimeTypes);
   }
@@ -110,15 +122,15 @@ export function ValidatedFilesInterceptor(
       context: ExecutionContext,
       next: CallHandler,
     ): Promise<Observable<any>> {
-      const req = context.switchToHttp().getRequest();
-      const res = context.switchToHttp().getResponse();
+      const req = context.switchToHttp().getRequest<Request>();
+      const res = context.switchToHttp().getResponse<Response>();
       const maxSize = options.maxSizeBytes ?? DEFAULT_MAX_SIZE;
 
       // Parse the multipart upload (array)
       await runMulterArray(req, res, fieldName, maxSize, maxFiles);
 
       // Validate each uploaded file individually
-      const files: Express.Multer.File[] = req.files ?? [];
+      const files = (req.files as Express.Multer.File[]) ?? [];
       for (const file of files) {
         validateFile(file, options);
       }
