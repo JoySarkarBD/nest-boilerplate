@@ -6,19 +6,16 @@
  */
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Request } from 'express';
-import { RedisClientService } from '../../common/redis/redis.client';
-import {
-  BaseThrottleGuard,
-  ThrottleConfig,
-} from '../../common/throttles/base-throttle.guard';
+import { RedisClientService } from '../redis/redis.client';
 import { FORGOT_PASSWORD } from './auth-throttle.constants';
+import { BaseThrottleGuard, ThrottleConfig } from './base-throttle.guard';
 
 /**
  * Throttle guard for the forgot-password endpoint.
  * Ensures that a single device cannot flood the system with password reset requests.
  */
 @Injectable()
-export class ForgotThrottleGuard extends BaseThrottleGuard {
+export class ForgotPasswordThrottleGuard extends BaseThrottleGuard {
   constructor(redis: RedisClientService) {
     const config: ThrottleConfig = {
       keyPrefix: FORGOT_PASSWORD.KEY_PREFIX,
