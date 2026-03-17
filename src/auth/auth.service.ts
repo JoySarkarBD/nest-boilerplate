@@ -128,6 +128,7 @@ export class AuthService {
     deviceId: string,
   ): Promise<ServicePayload<LoginResponseDto>> {
     const user = await this.userService.findByEmail(dto.email);
+
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
