@@ -4,15 +4,15 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { RedisModule } from 'src/common/redis/redis.module';
 import { EmailModule } from 'src/common/email/email.module';
-import { UserModule } from 'src/user/user.module';
+import { RedisTokenService } from 'src/common/redis/redis-service/auth/redis-token.service';
+import { RedisModule } from 'src/common/redis/redis.module';
 import config from 'src/shared/config/app.config';
+import { UserModule } from 'src/user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RedisTokenService } from 'src/common/redis/redis-service/auth/redis-token.service';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
