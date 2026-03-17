@@ -53,8 +53,6 @@ export class EmailProcessor implements OnModuleInit, OnModuleDestroy {
       async (job: Job<EmailJobData>) => {
         if (job.name !== EMAIL_JOB) return;
 
-        console.log(job.data);
-
         this.logger.debug(`Processing job #${job.id} → to: ${job.data.to}`);
 
         await this.transporter.sendMail({

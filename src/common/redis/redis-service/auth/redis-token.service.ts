@@ -4,7 +4,6 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { RedisClientService } from '../../redis.client';
-import { REDIS_TOKEN_PREFIX } from '../../constants/auth/auth.constants';
 
 /**
  * RedisTokenService manages the lifecycle of JWT authentication tokens in Redis.
@@ -16,10 +15,9 @@ export class RedisTokenService {
   private readonly logger = new Logger(RedisTokenService.name);
 
   constructor(private readonly redisClient: RedisClientService) {}
-
   /**
    * Store a token in Redis with a TTL.
-   * @param tokenId - Unique token identifier (used as part of the Redis key).
+   * @param tokenId - Unique token identifier.
    * @param token - The JWT string to store.
    * @param ttlSeconds - Expiry time in seconds.
    */
@@ -28,9 +26,10 @@ export class RedisTokenService {
     token: string,
     ttlSeconds: number,
   ): Promise<void> {
-    const key = REDIS_TOKEN_PREFIX + tokenId;
-    this.logger.debug(`Storing token key=${key} ttl=${ttlSeconds}s`);
-    await this.redisClient.getClientAuth().set(key, token, 'EX', ttlSeconds);
+    this.logger.debug(`Storing token key=${tokenId} ttl=${ttlSeconds}s`);
+    await this.redisClient
+      .getClientAuth()
+      .set(tokenId, token, 'EX', ttlSeconds);
   }
 
   /**
@@ -39,18 +38,30 @@ export class RedisTokenService {
    * @returns The stored token string, or `null` if not found / expired.
    */
   async getToken(tokenId: string): Promise<string | null> {
-    const key = REDIS_TOKEN_PREFIX + tokenId;
-    this.logger.debug(`Retrieving token key=${key}`);
-    return this.redisClient.getClientAuth().get(key);
+    this.logger.debug(`Retrieving token key=${tokenId}`);
+    return this.redisClient.getClientAuth().get(tokenId);
   }
 
   /**
-   * Delete a token from Redis (e.g., on logout or invalidation).
+   * Delete a token from Redis.
    * @param tokenId - Unique token identifier.
    */
   async deleteToken(tokenId: string): Promise<void> {
-    const key = REDIS_TOKEN_PREFIX + tokenId;
-    this.logger.debug(`Deleting token key=${key}`);
-    await this.redisClient.getClientAuth().del(key);
+    this.logger.debug(`Deleting token key=${tokenId}`);
+    await this.redisClient.getClientAuth().del(tokenId);
+  }
+
+  /**
+   * Delete all tokens for a specific user from Redis.
+   * @param userId - The user ID whose tokens should be invalidated.
+   */
+  async deleteUserTokens(userId: string): Promise<void> {
+    const pattern = `${userId}:*`;
+    this.logger.debug(`Deleting all tokens for user with pattern=${pattern}`);
+    const client = this.redisClient.getClientAuth();
+    const keys = await client.keys(pattern);
+    if (keys.length > 0) {
+      await client.del(...keys);
+    }
   }
 }

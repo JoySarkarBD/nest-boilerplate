@@ -12,18 +12,18 @@ export const LOGIN = {
   /** Time window in seconds. */
   TTL_SECONDS: 300, // 5 minutes
   /** Redis key prefix for this throttle bucket. */
-  KEY_PREFIX: 'throttle:auth:login',
+  KEY_PREFIX: 'auth:login',
 };
 
 export const REGISTER = {
   /** Maximum number of registration attempts allowed within the TTL window. */
-  LIMIT: 1,
+  LIMIT: 3,
 
   /** Time window in seconds. */
   TTL_SECONDS: 3600, // 1 hour
 
   /** Redis key prefix for this throttle bucket. */
-  KEY_PREFIX: 'throttle:auth:register',
+  KEY_PREFIX: 'auth:register',
 };
 
 /** Throttle configuration for resend verification email requests. */
@@ -35,7 +35,7 @@ export const RESEND_VERIFICATION_EMAIL = {
   TTL_SECONDS: 3600, // 1 hour
 
   /** Redis key prefix for this throttle bucket. */
-  KEY_PREFIX: 'throttle:auth:resend-verification',
+  KEY_PREFIX: 'auth:resend-verification',
 };
 
 /** Throttle configuration for forgot-password requests. */
@@ -45,7 +45,7 @@ export const FORGOT_PASSWORD = {
   /** Time window in seconds. */
   TTL_SECONDS: 120, // 2 minutes
   /** Redis key prefix for this throttle bucket. */
-  KEY_PREFIX: 'throttle:auth:forgot',
+  KEY_PREFIX: 'auth:forgot-password',
 };
 
 export const VERIFY_OTP = {
@@ -54,7 +54,7 @@ export const VERIFY_OTP = {
   /** Time window in seconds. */
   TTL_SECONDS: 300, // 5 minutes
   /** Redis key prefix for this throttle bucket. */
-  KEY_PREFIX: 'throttle:auth:verify-otp',
+  KEY_PREFIX: 'auth:verify-otp',
 };
 
 /** Throttle configuration for reset-password attempts. */
@@ -64,7 +64,7 @@ export const RESET_PASSWORD = {
   /** Time window in seconds. */
   TTL_SECONDS: 120, // 2 minutes
   /** Redis key prefix for this throttle bucket. */
-  KEY_PREFIX: 'throttle:auth:reset',
+  KEY_PREFIX: 'auth:reset-password',
 };
 
 /** Throttle configuration for change-password attempts. */
@@ -76,5 +76,5 @@ export const CHANGE_PASSWORD = {
   TTL_SECONDS: 3600, // 1 hour
 
   /** Redis key prefix for this throttle bucket. */
-  KEY_PREFIX: 'throttle:auth:change',
+  KEY_PREFIX: 'auth:change-password',
 };

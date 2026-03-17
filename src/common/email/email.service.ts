@@ -5,12 +5,12 @@
  */
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Queue } from 'bullmq';
-import { SendEmailDto } from './dto/send-email.dto';
 import {
-  EMAIL_QUEUE,
   EMAIL_JOB,
   EMAIL_MAX_ATTEMPTS,
+  EMAIL_QUEUE,
 } from './constants/email.constants';
+import { SendEmailDto } from './dto/send-email.dto';
 import { EmailJobData } from './interfaces/email.interface';
 
 /** Job options applied to every enqueued email. */

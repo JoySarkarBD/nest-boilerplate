@@ -15,18 +15,17 @@ import { map } from 'rxjs/operators';
 import { ServiceResponse } from 'src/shared/interfaces/response.interface';
 
 /**
- * ResponseInterceptor wraps outgoing data in a standardized JSON response format.
- * It manages common response fields like success status, message, method, and endpoint.
+ * Global interceptor to wrap all API responses in a consistent ServiceResponse format.
+ *
+ * This interceptor checks if the response is already a ServiceResponse. If it is, it returns it as-is.
+ * If not, it wraps the response data in a new ServiceResponse object, extracting message and payload intelligently.
+ * It also ensures that the HTTP status code is correctly set based on the response data or defaults to 200.
+ * The interceptor adds metadata such as the HTTP method, endpoint, and timestamp to the response envelope.
+ * The root API path (/api) is excluded from wrapping to allow for a simple health check or welcome message.
+ * This interceptor promotes a consistent API response structure, making it easier for clients to handle responses uniformly.
  */
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
-  /**
-   * Intercepts outgoing responses and wraps them in a ServiceResponse envelope.
-   *
-   * @param context - The execution context of the request, providing access to request and response objects.
-   * @param next - The next handler in the request pipeline to trigger the response emission.
-   * @returns An Observable that emits the transformed ServiceResponse.
-   */
   intercept(
     context: ExecutionContext,
     next: CallHandler<unknown>,
@@ -39,17 +38,15 @@ export class ResponseInterceptor implements NestInterceptor {
 
     // Skip wrapping for root API path
     if (url === '/api' || url === '/api/') {
-      return next.handle() as Observable<ServiceResponse>; // rare case — type assertion ok here
+      return next.handle() as Observable<ServiceResponse>;
     }
 
     return next.handle().pipe(
       map((data: unknown): ServiceResponse => {
-        // Already looks like ServiceResponse
+        // Already full ServiceResponse → return as-is (including success: false cases)
         if (this.isServiceResponse(data)) {
-          // Safe: we already checked the shape
           const typed = data;
 
-          // Ensure statusCode is always present
           if (typeof typed.statusCode !== 'number') {
             typed.statusCode = res.statusCode ?? 200;
           }
@@ -57,27 +54,48 @@ export class ResponseInterceptor implements NestInterceptor {
           return typed;
         }
 
-        // Raw value or partial envelope
+        //  Determine status code
         let statusCode = res.statusCode ?? 200;
 
-        // Safely extract statusCode only if it exists and is number
         if (
           data &&
           typeof data === 'object' &&
           data !== null &&
           'statusCode' in data &&
-          typeof (data as { statusCode?: unknown }).statusCode === 'number'
+          typeof (data as any).statusCode === 'number'
         ) {
           statusCode = (data as { statusCode: number }).statusCode;
         }
 
-        // Update Express response status if needed
         if (res.statusCode !== statusCode) {
           res.status(statusCode);
         }
 
-        const { message, payload } = this.extractMessageAndPayload(data);
+        //  Extract message & payload intelligently
+        let message = 'Request successful';
+        let payload: unknown = data;
 
+        if (data && typeof data === 'object' && data !== null) {
+          const obj = data as Record<string, unknown>;
+
+          // Case: { message: "...", data: {...} } → business response
+          if ('message' in obj && typeof obj.message === 'string') {
+            message = obj.message;
+
+            if ('data' in obj) {
+              payload = obj.data;
+            } else {
+              // Case: only { message: "..." } → no real payload
+              payload = null;
+            }
+          }
+          // Case: plain object without message → use it as payload
+          else if (Object.keys(obj).length > 0) {
+            payload = obj;
+          }
+        }
+
+        // Build final standardized response
         return {
           success: statusCode >= 200 && statusCode < 300,
           message,
@@ -91,12 +109,6 @@ export class ResponseInterceptor implements NestInterceptor {
     );
   }
 
-  /**
-   * Type guard to check if a value matches the minimal ServiceResponse shape.
-   *
-   * @param value - The value to check for compatibility with ServiceResponse.
-   * @returns True if the value matches the ServiceResponse structure, false otherwise.
-   */
   private isServiceResponse(value: unknown): value is ServiceResponse {
     return (
       value != null &&
@@ -105,36 +117,5 @@ export class ResponseInterceptor implements NestInterceptor {
       'timestamp' in value &&
       'statusCode' in value
     );
-  }
-
-  /**
-   * Safely extracts a message and the actual payload from the response data.
-   *
-   * @param data - The raw response data emitted by the controller.
-   * @returns An object containing the extracted message and payload.
-   */
-  private extractMessageAndPayload(data: unknown): {
-    message: string;
-    payload: unknown;
-  } {
-    if (data && typeof data === 'object' && data !== null) {
-      const obj = data as Record<string, unknown>;
-
-      const hasMessage = 'message' in obj && typeof obj.message === 'string';
-      const hasDataProp = 'data' in obj;
-
-      if (hasMessage || hasDataProp) {
-        return {
-          message: hasMessage ? (obj.message as string) : 'Request successful',
-          payload: hasDataProp ? obj.data : data,
-        };
-      }
-    }
-
-    // Default fallback
-    return {
-      message: 'Request successful',
-      payload: data,
-    };
   }
 }

@@ -16,6 +16,9 @@ interface AppConfig {
   /** Port the API Gateway listens on. */
   PORT: number;
 
+  /** Frontend URL. */
+  FRONTEND_URL: string;
+
   /** JWT token lifetime in seconds (default: 30 days). */
   JWT_EXPIRES_IN: number;
   /** Secret key used to sign JWT tokens. */
@@ -75,7 +78,7 @@ const str = (key: string): string => process.env[key] as string;
 /** Application-wide configuration object. */
 const config: AppConfig = {
   PORT: int('PORT'),
-
+  FRONTEND_URL: str('FRONTEND_URL'),
   JWT_EXPIRES_IN: int('JWT_EXPIRES_IN'),
   JWT_SECRET: str('JWT_SECRET'),
 
