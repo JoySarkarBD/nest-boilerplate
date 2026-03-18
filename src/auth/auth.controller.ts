@@ -105,7 +105,7 @@ export class AuthController {
   @UseGuards(RegisterThrottleGuard)
   @Post('register')
   async register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+    return await this.authService.register(dto);
   }
 
   @ApiOperation({ summary: 'Verify account with token' })
@@ -117,7 +117,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('verify-account')
   async verifyAccount(@Body() dto: VerifyAccountDto) {
-    return this.authService.verifyAccount(dto);
+    return await this.authService.verifyAccount(dto);
   }
 
   @ApiOperation({ summary: 'Resend verification email' })
@@ -139,7 +139,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('resend-verification-email')
   async resendVerificationEmail(@Body() dto: ResendVerificationDto) {
-    return this.authService.resendVerificationEmail(dto);
+    return await this.authService.resendVerificationEmail(dto);
   }
 
   @ApiOperation({ summary: 'Login user' })
@@ -186,7 +186,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('forgot-password')
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(dto);
+    return await this.authService.forgotPassword(dto);
   }
 
   @ApiOperation({ summary: 'Verify OTP for password reset' })
@@ -208,7 +208,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('verify-otp')
   async verifyOtp(@Body() dto: VerifyOtpDto) {
-    return this.authService.verifyOtp(dto);
+    return await this.authService.verifyOtp(dto);
   }
 
   @ApiOperation({ summary: 'Reset password' })
@@ -252,10 +252,10 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('change-password')
   async changePassword(
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthUser,
     @Body() dto: ChangePasswordDto,
   ) {
-    return this.authService.changePassword(user.userId, dto);
+    return await this.authService.changePassword(user._id!, dto);
   }
 
   @ApiOperation({ summary: 'Logout (authenticated)' })
@@ -285,6 +285,6 @@ export class AuthController {
     @CurrentUser() user: AuthUser,
     @Headers('x-device-id') deviceId: string,
   ) {
-    return this.authService.logout(user._id!, deviceId);
+    return await this.authService.logout(user._id, deviceId);
   }
 }

@@ -69,5 +69,4 @@ export class User extends Document {
 export const UserSchema = SchemaFactory.createForClass(User);
 
 // Index the email field for faster queries and ensure uniqueness
-UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ fullName: 'text', email: 'text', role: 'text' });

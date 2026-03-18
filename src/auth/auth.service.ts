@@ -27,10 +27,7 @@ import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyAccountDto } from './dto/verify-account.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
-import type {
-  AuthMessageResponseDto,
-  LoginResponseDto,
-} from './interfaces/auth.interface';
+import type { LoginResponseDto } from './interfaces/auth.interface';
 
 @Injectable()
 export class AuthService {
@@ -44,7 +41,7 @@ export class AuthService {
   ) {}
 
   /** Register user */
-  async register(dto: RegisterDto): Promise<AuthMessageResponseDto> {
+  async register(dto: RegisterDto) {
     const existingUser = await this.userService.findByEmail(dto.email);
     if (existingUser) {
       throw new ConflictException('Email already exists');
@@ -77,7 +74,7 @@ export class AuthService {
   }
 
   /** Verify account */
-  async verifyAccount(dto: VerifyAccountDto): Promise<AuthMessageResponseDto> {
+  async verifyAccount(dto: VerifyAccountDto) {
     const user = await this.userService.findByVerificationToken(dto.token);
     if (!user) {
       throw new BadRequestException('Invalid or expired token');
@@ -94,9 +91,7 @@ export class AuthService {
   }
 
   /** Resend verification email */
-  async resendVerificationEmail(
-    dto: ResendVerificationDto,
-  ): Promise<AuthMessageResponseDto> {
+  async resendVerificationEmail(dto: ResendVerificationDto) {
     const user = await this.userService.findByEmail(dto.email);
     if (!user) {
       throw new BadRequestException('User not found');
@@ -165,9 +160,7 @@ export class AuthService {
   }
 
   /** Forgot Password */
-  async forgotPassword(
-    dto: ForgotPasswordDto,
-  ): Promise<AuthMessageResponseDto> {
+  async forgotPassword(dto: ForgotPasswordDto) {
     const user = await this.userService.findByEmail(dto.email);
     if (!user) {
       throw new HttpException(
@@ -212,7 +205,7 @@ export class AuthService {
   }
 
   /** Verify OTP */
-  async verifyOtp(dto: VerifyOtpDto): Promise<AuthMessageResponseDto> {
+  async verifyOtp(dto: VerifyOtpDto) {
     const user = await this.userService.findByEmail(dto.email);
     if (
       !user ||
@@ -228,7 +221,7 @@ export class AuthService {
   }
 
   /** Reset Password */
-  async resetPassword(dto: ResetPasswordDto): Promise<AuthMessageResponseDto> {
+  async resetPassword(dto: ResetPasswordDto) {
     const user = await this.userService.findByEmail(dto.email);
     if (!user) {
       throw new BadRequestException('User not found');
@@ -274,10 +267,7 @@ export class AuthService {
   }
 
   /** Change Password */
-  async changePassword(
-    userId: string,
-    dto: ChangePasswordDto,
-  ): Promise<AuthMessageResponseDto> {
+  async changePassword(userId: string, dto: ChangePasswordDto) {
     const user = await this.userService.findById(userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -309,11 +299,9 @@ export class AuthService {
   }
 
   /** Logout */
-  async logout(
-    userId: AuthUser['_id'],
-    deviceId: string,
-  ): Promise<AuthMessageResponseDto> {
+  async logout(userId: AuthUser['_id'], deviceId: string) {
     const tokenId = `${userId}:${deviceId}`;
+    console.log(tokenId);
     await this.redisTokenService.deleteToken(tokenId);
 
     return {

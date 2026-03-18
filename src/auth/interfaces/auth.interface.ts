@@ -22,11 +22,3 @@ export type LoginResponseDto = {
   /** The user payload. */
   user: UserPayload;
 };
-
-/**
- * Represents a generic message-only data response.
- */
-export type AuthMessageResponseDto = {
-  /** A descriptive message about the operation's result. */
-  message: string;
-};
