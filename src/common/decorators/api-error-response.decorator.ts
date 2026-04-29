@@ -8,7 +8,6 @@ import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiForbiddenResponse,
-  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiPayloadTooLargeResponse,
   ApiTooManyRequestsResponse,
@@ -134,12 +133,6 @@ export function ApiErrorResponses(dtos: ErrorDtoMap) {
     decorators.push(
       ApiUnsupportedMediaTypeResponse({
         type: dtos.unsupported || CustomUnsupportedMediaTypeDto,
-      }),
-    );
-  if (dtos.internal)
-    decorators.push(
-      ApiInternalServerErrorResponse({
-        type: dtos.internal || CustomInternalServerErrorDto,
       }),
     );
   if (dtos.throttle)

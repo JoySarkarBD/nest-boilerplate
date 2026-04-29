@@ -13,7 +13,6 @@ import {
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiErrorResponses } from '../decorators/api-error-response.decorator';
 import { ApiSuccessResponse } from '../decorators/api-success-response.decorator';
-import { tryCatch } from '../utils/try-catch.util';
 import {
   FileUploadMultipleInternalErrorDto,
   FileUploadSingleInternalErrorDto,
@@ -78,7 +77,6 @@ export class FileUploadTestController {
     }),
   )
   async uploadSingle(@UploadedFile() file: Express.Multer.File) {
-    return tryCatch(() => {
       // At this point, `file` is guaranteed to be safe and match the allowed types.
       return {
         message: 'File uploaded and validated successfully',
@@ -88,7 +86,6 @@ export class FileUploadTestController {
           mimetype: file.mimetype,
         },
       };
-    }, 'Failed to upload single file');
   }
 
   /**
@@ -136,7 +133,6 @@ export class FileUploadTestController {
     ),
   )
   async uploadMultiple(@UploadedFiles() files: Express.Multer.File[]) {
-    return tryCatch(() => {
       // `files` array is fully validated
       return {
         message: `${files.length} files uploaded and validated successfully`,
@@ -148,6 +144,5 @@ export class FileUploadTestController {
           })),
         },
       };
-    }, 'Failed to upload multiple files');
   }
 }
