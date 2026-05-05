@@ -1,13 +1,17 @@
 /**
  * @fileoverview Shape of the authenticated user attached to the request.
  *
- * After a successful JWT validation the `JwtStrategy` fetches the
- * full user record and places it on `request.user`. This interface
- * describes the public (non-sensitive) fields available from there.
+ * After successful JWT validation, JwtStrategy populates `request.user`
+ * with this shape. Field names match the PostgreSQL User table columns
+ * (via Prisma model) — `name` not `fullName`.
  */
 export interface AuthUser {
+  /** PostgreSQL UUID primary key. */
   _id?: string;
+  /** User's display name (maps to `User.name` column). */
   name?: string;
+  /** User's email address. */
   email?: string;
+  /** User's role (CUSTOMER | SHOP_OWNER). */
   role?: string;
 }

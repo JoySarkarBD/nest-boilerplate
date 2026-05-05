@@ -1,45 +1,78 @@
 /**
- * @fileoverview Register throttle guard.
+ * @fileoverview Register throttle guard — multi-layer.
  *
- * Limits how often a single device can request a registration
- * using the `Register` rate-limit constants.
+ * Layers enforced (in order):
+ *  1. IP + UA hash + optional device-id   (anti-mass-registration per client)
+ *  2. Email identity                       (anti-multi-IP spam on same email)
+ *  3. Phone identity                       (anti-multi-IP spam on same phone)
+ *
+ * Email and phone layers are applied only when the respective field is
+ * present in the request body.
+ *
+ * @module throttles/auth
  */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Request } from 'express';
+import { Injectable } from '@nestjs/common';
+import type { FastifyRequest } from 'fastify';
 import { RedisClientService } from '../../redis/redis.client';
-import { BaseThrottleGuard, ThrottleConfig } from '../base-throttle.guard';
-import { REGISTER } from './auth-throttle.constants';
+import {
+  BaseThrottleGuard,
+  buildHybridIpKey,
+  ThrottleLayer,
+} from '../base-throttle.guard';
+import {
+  REGISTER,
+  REGISTER_EMAIL,
+  REGISTER_PHONE,
+} from '../config/throttle.config';
 
-/**
- * Throttle guard for the register endpoint.
- * Ensures that a single device cannot flood the system with registration requests.
- */
 @Injectable()
 export class RegisterThrottleGuard extends BaseThrottleGuard {
   constructor(redis: RedisClientService) {
-    const config: ThrottleConfig = {
-      keyPrefix: REGISTER.KEY_PREFIX,
-      ttlSeconds: REGISTER.TTL_SECONDS,
-      limit: REGISTER.LIMIT,
-    };
-    super(redis, config);
+    super(redis);
   }
 
-  /**
-   * Build unique identifier from deviceId for throttling.
-   * @param req - Express request
-   * @returns string identifier
-   * @throws HttpException if deviceId is missing
-   */
-  protected buildIdentifier(req: Request): string {
-    const deviceId = req.headers['x-device-id'] as string;
-    if (!deviceId) {
-      throw new HttpException(
-        'Device identifier missing - x-device-id header is required',
-        HttpStatus.BAD_REQUEST,
-      );
+  protected buildLayers(req: FastifyRequest): ThrottleLayer[] {
+    const body = req.body as Record<string, unknown> | undefined;
+
+    const layers: ThrottleLayer[] = [
+      {
+        identifier: buildHybridIpKey(req),
+        config: {
+          keyPrefix: REGISTER.KEY_PREFIX,
+          ttlSeconds: REGISTER.TTL_SECONDS,
+          limit: REGISTER.LIMIT,
+          blockSeconds: REGISTER.BLOCK_SECONDS,
+          identifierType: 'ip+ua+device',
+        },
+      },
+    ];
+
+    const email = body?.['email'];
+    if (typeof email === 'string' && email.includes('@')) {
+      layers.push({
+        identifier: email.toLowerCase().trim(),
+        config: {
+          keyPrefix: REGISTER_EMAIL.KEY_PREFIX,
+          ttlSeconds: REGISTER_EMAIL.TTL_SECONDS,
+          limit: REGISTER_EMAIL.LIMIT,
+          identifierType: 'email',
+        },
+      });
     }
 
-    return `${deviceId}`;
+    const phone = body?.['phone'];
+    if (typeof phone === 'string' && phone.length >= 7) {
+      layers.push({
+        identifier: phone.replace(/\s+/g, '').trim(),
+        config: {
+          keyPrefix: REGISTER_PHONE.KEY_PREFIX,
+          ttlSeconds: REGISTER_PHONE.TTL_SECONDS,
+          limit: REGISTER_PHONE.LIMIT,
+          identifierType: 'phone',
+        },
+      });
+    }
+
+    return layers;
   }
 }

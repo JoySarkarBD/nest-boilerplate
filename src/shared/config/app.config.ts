@@ -1,105 +1,101 @@
 /**
  * @fileoverview Centralized application configuration.
  *
- * Loads environment variables from `.env` using `dotenv` and
- * exposes them as a strongly-typed, frozen configuration object.
- * Every service in the monorepo should import config from here
- * instead of reading `process.env` directly.
+ * Loads environment variables from `.env` using `dotenv` and exposes them as
+ * a strongly-typed, frozen configuration object. Every service imports config
+ * from here — never reads `process.env` directly.
+ *
+ * Changes:
+ *  - Removed: MONGO_URI (Mongoose migration)
+ *  - Added:   DATABASE_URL (PostgreSQL connection string for Prisma)
+ *  - Added:   TRUSTED_PROXIES (comma-separated CIDR list for proxy-safe IP resolution)
+ *  - Added:   THROTTLE_* env vars (all throttle limits/TTLs; see throttle.config.ts)
  */
-
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-/** Strongly-typed shape of the application configuration. */
+/** Strongly-typed application configuration shape. */
 interface AppConfig {
-  /** Port the API Gateway listens on. */
   PORT: number;
-
-  /** Frontend URL. */
+  NODE_ENV: 'development' | 'production' | 'test';
   FRONTEND_URL: string;
 
-  /** JWT token lifetime in seconds (default: 30 days). */
   JWT_EXPIRES_IN: number;
-  /** Secret key used to sign JWT tokens. */
   JWT_SECRET: string;
 
-  /** bcrypt salt rounds for password hashing. */
   BCRYPT_SALT_ROUNDS: number;
 
-  /** SMTP host for outgoing emails. */
   MAIL_HOST: string;
-  /** SMTP port. */
   MAIL_PORT: number;
-  /** SMTP authentication username. */
   MAIL_USER: string;
-  /** SMTP authentication password / app password. */
   MAIL_PASS: string;
-  /** Display name used in the `From` header. */
   MAIL_FROM_NAME: string;
-  /** Email address used in the `From` header. */
   MAIL_FROM_EMAIL: string;
 
-  /** MongoDB connection URI. */
-  MONGO_URI: string;
+  /** PostgreSQL connection string used by Prisma. */
+  DATABASE_URL: string;
 
-  /** Redis server hostname. */
   REDIS_HOST: string;
-  /** Redis server port. */
   REDIS_PORT: number;
-  /** Redis server password (empty string if none). */
   REDIS_PASSWORD: string;
-  /** Redis database index for auth tokens. */
   REDIS_DB_AUTH: number;
-  /** Redis database index for session data. */
   REDIS_DB_SESSION: number;
-  /** Redis database index for throttle counters. */
   REDIS_DB_THROTTLE: number;
-  /** Redis database index for email queue. */
+  /** Redis DB index for the general email BullMQ queue. */
   REDIS_DB_EMAIL_QUEUE: number;
+  /** Redis DB index for the auth/OTP-specific BullMQ email queue. */
+  REDIS_DB_AUTH_EMAIL_QUEUE: number;
+  /** Redis DB index for the auth/OTP-specific BullMQ SMS queue. */
+  REDIS_DB_AUTH_SMS_QUEUE: number;
+
+  /**
+   * Comma-separated list of trusted proxy CIDRs / IPs.
+   * Used by resolveClientIp() to validate forwarded-for headers.
+   * Defaults to Cloudflare ranges + private ranges when not set.
+   */
+  TRUSTED_PROXIES: string;
 }
 
-/**
- * Reads a single environment variable and parses it as an integer.
- *
- * @param key - Name of the environment variable.
- * @returns The parsed integer value, or `NaN` if the variable is missing.
- */
-const int = (key: string): number => parseInt(process.env[key] as string, 10);
+const int = (key: string, fallback?: number): number => {
+  const raw = process.env[key];
+  if (!raw) return fallback ?? NaN;
+  return parseInt(raw, 10);
+};
 
-/**
- * Reads a single environment variable as a string.
- *
- * @param key - Name of the environment variable.
- * @returns The raw string value.
- */
-const str = (key: string): string => process.env[key] as string;
+const str = (key: string, fallback = ''): string =>
+  process.env[key] ?? fallback;
 
-/** Application-wide configuration object. */
-const config: AppConfig = {
-  PORT: int('PORT'),
+const config: AppConfig = Object.freeze({
+  PORT: int('PORT', 3000),
+  NODE_ENV: (process.env.NODE_ENV as AppConfig['NODE_ENV']) || 'development',
   FRONTEND_URL: str('FRONTEND_URL'),
+
   JWT_EXPIRES_IN: int('JWT_EXPIRES_IN'),
   JWT_SECRET: str('JWT_SECRET'),
 
-  BCRYPT_SALT_ROUNDS: int('BCRYPT_SALT_ROUNDS'),
+  BCRYPT_SALT_ROUNDS: int('BCRYPT_SALT_ROUNDS', 12),
 
   MAIL_HOST: str('MAIL_HOST'),
-  MAIL_PORT: int('MAIL_PORT'),
+  MAIL_PORT: int('MAIL_PORT', 587),
   MAIL_USER: str('MAIL_USER'),
   MAIL_PASS: str('MAIL_PASS'),
   MAIL_FROM_NAME: str('MAIL_FROM_NAME'),
   MAIL_FROM_EMAIL: str('MAIL_FROM_EMAIL'),
 
-  MONGO_URI: str('MONGO_URI'),
+  DATABASE_URL: str('DATABASE_URL'),
 
-  REDIS_HOST: str('REDIS_HOST'),
-  REDIS_PORT: int('REDIS_PORT'),
+  REDIS_HOST: str('REDIS_HOST', '127.0.0.1'),
+  REDIS_PORT: int('REDIS_PORT', 6379),
   REDIS_PASSWORD: str('REDIS_PASSWORD'),
-  REDIS_DB_AUTH: int('REDIS_DB_AUTH'),
-  REDIS_DB_SESSION: int('REDIS_DB_SESSION'),
-  REDIS_DB_THROTTLE: int('REDIS_DB_THROTTLE'),
-  REDIS_DB_EMAIL_QUEUE: int('REDIS_DB_EMAIL_QUEUE'),
-};
+  REDIS_DB_AUTH: int('REDIS_DB_AUTH', 0),
+  REDIS_DB_SESSION: int('REDIS_DB_SESSION', 1),
+  REDIS_DB_THROTTLE: int('REDIS_DB_THROTTLE', 2),
+  REDIS_DB_EMAIL_QUEUE: int('REDIS_DB_EMAIL_QUEUE', 3),
+  REDIS_DB_AUTH_EMAIL_QUEUE: int('REDIS_DB_AUTH_EMAIL_QUEUE', 4),
+  REDIS_DB_AUTH_SMS_QUEUE: int('REDIS_DB_AUTH_SMS_QUEUE', 5),
+
+  TRUSTED_PROXIES: str('TRUSTED_PROXIES'),
+});
 
 export default config;

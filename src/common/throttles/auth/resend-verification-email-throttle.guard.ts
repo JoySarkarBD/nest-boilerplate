@@ -1,45 +1,57 @@
 /**
- * @fileoverview Resend verification email throttle guard.
+ * @fileoverview Resend-verification-email throttle guard — multi-layer.
  *
- * Limits how often a single device can request a verification email
- * using the `ResendVerificationEmail` rate-limit constants.
+ * Layers enforced (in order):
+ *  1. IP + UA hash + optional device-id   (per-client)
+ *  2. Email identity                       (anti-multi-IP spray on same account)
+ *
+ * @module throttles/auth
  */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Request } from 'express';
+import { Injectable } from '@nestjs/common';
+import type { FastifyRequest } from 'fastify';
 import { RedisClientService } from '../../redis/redis.client';
-import { BaseThrottleGuard, ThrottleConfig } from '../base-throttle.guard';
-import { RESEND_VERIFICATION_EMAIL } from './auth-throttle.constants';
+import {
+  BaseThrottleGuard,
+  buildHybridIpKey,
+  ThrottleLayer,
+} from '../base-throttle.guard';
+import {
+  RESEND_VERIFICATION_EMAIL,
+  RESEND_VERIFICATION_EMAIL_IDENTITY,
+} from '../config/throttle.config';
 
-/**
- * Throttle guard for the resend verification email endpoint.
- * Ensures that a single device cannot flood the system with verification email requests.
- */
 @Injectable()
 export class ResendVerificationEmailThrottleGuard extends BaseThrottleGuard {
   constructor(redis: RedisClientService) {
-    const config: ThrottleConfig = {
-      keyPrefix: RESEND_VERIFICATION_EMAIL.KEY_PREFIX,
-      ttlSeconds: RESEND_VERIFICATION_EMAIL.TTL_SECONDS,
-      limit: RESEND_VERIFICATION_EMAIL.LIMIT,
-    };
-    super(redis, config);
+    super(redis);
   }
 
-  /**
-   * Build unique identifier from deviceId for throttling.
-   * @param req - Express request
-   * @returns string identifier
-   * @throws HttpException if deviceId is missing
-   */
-  protected buildIdentifier(req: Request): string {
-    const deviceId = req.headers['x-device-id'] as string;
-    if (!deviceId) {
-      throw new HttpException(
-        'Device identifier missing - x-device-id header is required',
-        HttpStatus.BAD_REQUEST,
-      );
+  protected buildLayers(req: FastifyRequest): ThrottleLayer[] {
+    const layers: ThrottleLayer[] = [
+      {
+        identifier: buildHybridIpKey(req),
+        config: {
+          keyPrefix: RESEND_VERIFICATION_EMAIL.KEY_PREFIX,
+          ttlSeconds: RESEND_VERIFICATION_EMAIL.TTL_SECONDS,
+          limit: RESEND_VERIFICATION_EMAIL.LIMIT,
+          identifierType: 'ip+ua+device',
+        },
+      },
+    ];
+
+    const email = (req.body as Record<string, unknown> | undefined)?.['email'];
+    if (typeof email === 'string' && email.includes('@')) {
+      layers.push({
+        identifier: email.toLowerCase().trim(),
+        config: {
+          keyPrefix: RESEND_VERIFICATION_EMAIL_IDENTITY.KEY_PREFIX,
+          ttlSeconds: RESEND_VERIFICATION_EMAIL_IDENTITY.TTL_SECONDS,
+          limit: RESEND_VERIFICATION_EMAIL_IDENTITY.LIMIT,
+          identifierType: 'email',
+        },
+      });
     }
 
-    return `${deviceId}`;
+    return layers;
   }
 }

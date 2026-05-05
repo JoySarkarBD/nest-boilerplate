@@ -64,12 +64,12 @@ function matchesMagicBytes(buffer: Buffer, mimeType: string): boolean {
 /**
  * Validates the actual content type of an uploaded file against magic bytes.
  *
- * @param file - Multer file object (must be in memory storage).
+ * @param file - Uploaded file object (containing buffer and mimetype).
  * @param allowedMimeTypes - Accepted MIME types. If empty the check is skipped.
  * @throws {UnsupportedMediaTypeException} when content does not match declared type.
  */
 export function validateMimeType(
-  file: Express.Multer.File,
+  file: { buffer: Buffer; mimetype: string },
   allowedMimeTypes: string[],
 ): void {
   if (!allowedMimeTypes || allowedMimeTypes.length === 0) return;

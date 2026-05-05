@@ -72,9 +72,9 @@ export class RedisClientService implements OnModuleDestroy {
   }
 
   /**
-   * Returns plain connection options for the email queue.
-   * Use this when passing a connection to bullmq to avoid the
-   * dual-ioredis type conflict (bullmq bundles its own ioredis).
+   * Returns plain connection options for the general email queue.
+   * Use this when passing a connection to BullMQ to avoid the
+   * dual-ioredis type conflict (BullMQ bundles its own ioredis).
    */
   getClientEmailQueueOptions(): RedisOptions {
     return {
@@ -83,6 +83,40 @@ export class RedisClientService implements OnModuleDestroy {
       password: config.REDIS_PASSWORD || undefined,
       db: config.REDIS_DB_EMAIL_QUEUE
         ? Number(config.REDIS_DB_EMAIL_QUEUE)
+        : undefined,
+    };
+  }
+
+  /**
+   * Returns plain connection options for the auth/OTP email queue.
+   *
+   * Deliberately isolated to its own Redis DB so that a general-email
+   * backlog can never starve time-sensitive authentication messages.
+   */
+  getClientAuthEmailQueueOptions(): RedisOptions {
+    return {
+      host: config.REDIS_HOST ?? '127.0.0.1',
+      port: Number(config.REDIS_PORT ?? 6379),
+      password: config.REDIS_PASSWORD || undefined,
+      db: config.REDIS_DB_AUTH_EMAIL_QUEUE
+        ? Number(config.REDIS_DB_AUTH_EMAIL_QUEUE)
+        : undefined,
+    };
+  }
+
+  /**
+   * Returns plain connection options for the auth SMS (OTP) queue.
+   *
+   * Isolated to its own Redis DB (`REDIS_DB_AUTH_SMS_QUEUE`) so that
+   * email queue backlog can never delay SMS OTP delivery.
+   */
+  getClientAuthSmsQueueOptions(): RedisOptions {
+    return {
+      host: config.REDIS_HOST ?? '127.0.0.1',
+      port: Number(config.REDIS_PORT ?? 6379),
+      password: config.REDIS_PASSWORD || undefined,
+      db: config.REDIS_DB_AUTH_SMS_QUEUE
+        ? Number(config.REDIS_DB_AUTH_SMS_QUEUE)
         : undefined,
     };
   }

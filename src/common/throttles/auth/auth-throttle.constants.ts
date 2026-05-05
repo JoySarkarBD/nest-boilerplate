@@ -1,80 +1,26 @@
 /**
- * @fileoverview Auth throttle constants.
+ * @fileoverview Auth throttle constants — re-export shim.
  *
- * Rate-limit configuration for authentication-related endpoints
- * (login,forgot-password, verify-otp, reset-password).
+ * All throttle values are now defined in and sourced from
+ * `../config/throttle.config`. This file is kept only for
+ * backward-compatibility with any external import paths.
+ *
+ * @deprecated Import directly from `../config/throttle.config`.
  */
-
-/** Throttle configuration for login attempts. */
-export const LOGIN = {
-  /** Maximum number of login attempts allowed within the TTL window. */
-  LIMIT: 3,
-  /** Time window in seconds. */
-  TTL_SECONDS: 300, // 5 minutes
-  /** Redis key prefix for this throttle bucket. */
-  KEY_PREFIX: 'auth:login',
-};
-
-export const REGISTER = {
-  /** Maximum number of registration attempts allowed within the TTL window. */
-  LIMIT: 3,
-
-  /** Time window in seconds. */
-  TTL_SECONDS: 3600, // 1 hour
-
-  /** Redis key prefix for this throttle bucket. */
-  KEY_PREFIX: 'auth:register',
-};
-
-/** Throttle configuration for resend verification email requests. */
-export const RESEND_VERIFICATION_EMAIL = {
-  /** Maximum number of resend attempts allowed within the TTL window. */
-  LIMIT: 2,
-
-  /** Time window in seconds. */
-  TTL_SECONDS: 3600, // 1 hour
-
-  /** Redis key prefix for this throttle bucket. */
-  KEY_PREFIX: 'auth:resend-verification',
-};
-
-/** Throttle configuration for forgot-password requests. */
-export const FORGOT_PASSWORD = {
-  /** Maximum number of requests allowed within the TTL window. */
-  LIMIT: 1,
-  /** Time window in seconds. */
-  TTL_SECONDS: 120, // 2 minutes
-  /** Redis key prefix for this throttle bucket. */
-  KEY_PREFIX: 'auth:forgot-password',
-};
-
-export const VERIFY_OTP = {
-  /** Maximum number of OTP verification attempts allowed within the TTL window. */
-  LIMIT: 5,
-  /** Time window in seconds. */
-  TTL_SECONDS: 300, // 5 minutes
-  /** Redis key prefix for this throttle bucket. */
-  KEY_PREFIX: 'auth:verify-otp',
-};
-
-/** Throttle configuration for reset-password attempts. */
-export const RESET_PASSWORD = {
-  /** Maximum number of attempts allowed within the TTL window. */
-  LIMIT: 5,
-  /** Time window in seconds. */
-  TTL_SECONDS: 120, // 2 minutes
-  /** Redis key prefix for this throttle bucket. */
-  KEY_PREFIX: 'auth:reset-password',
-};
-
-/** Throttle configuration for change-password attempts. */
-export const CHANGE_PASSWORD = {
-  /** Maximum number of attempts allowed within the TTL window. */
-  LIMIT: 1,
-
-  /** Time window in seconds. */
-  TTL_SECONDS: 3600, // 1 hour
-
-  /** Redis key prefix for this throttle bucket. */
-  KEY_PREFIX: 'auth:change-password',
-};
+export {
+  LOGIN,
+  LOGIN_EMAIL,
+  REGISTER,
+  REGISTER_EMAIL,
+  REGISTER_PHONE,
+  RESEND_VERIFICATION_EMAIL,
+  RESEND_VERIFICATION_EMAIL_IDENTITY,
+  FORGOT_PASSWORD,
+  FORGOT_PASSWORD_EMAIL,
+  VERIFY_OTP,
+  VERIFY_OTP_EMAIL,
+  RESET_PASSWORD,
+  RESET_PASSWORD_EMAIL,
+  CHANGE_PASSWORD,
+  AUTHENTICATED_USER,
+} from '../config/throttle.config';

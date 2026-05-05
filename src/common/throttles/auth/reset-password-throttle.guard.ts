@@ -1,45 +1,55 @@
 /**
- * @fileoverview Reset-password throttle guard.
+ * @fileoverview Reset-password throttle guard — multi-layer.
  *
- * Limits how often a single device can submit a password-reset request
- * using the `RESET_PASSWORD` rate-limit constants.
+ * Layers enforced (in order):
+ *  1. IP + UA hash + optional device-id   (per-client)
+ *  2. Email identity                       (per-email combined protection)
+ *
+ * @module throttles/auth
  */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Request } from 'express';
+import { Injectable } from '@nestjs/common';
+import type { FastifyRequest } from 'fastify';
 import { RedisClientService } from '../../redis/redis.client';
-import { BaseThrottleGuard, ThrottleConfig } from '../base-throttle.guard';
-import { RESET_PASSWORD } from './auth-throttle.constants';
+import {
+  BaseThrottleGuard,
+  buildHybridIpKey,
+  ThrottleLayer,
+} from '../base-throttle.guard';
+import { RESET_PASSWORD, RESET_PASSWORD_EMAIL } from '../config/throttle.config';
 
-/**
- * Throttle guard for the reset-password endpoint.
- * Limits the number of password reset attempts from a single device to prevent brute-force.
- */
 @Injectable()
 export class ResetPasswordThrottleGuard extends BaseThrottleGuard {
   constructor(redis: RedisClientService) {
-    const config: ThrottleConfig = {
-      keyPrefix: RESET_PASSWORD.KEY_PREFIX,
-      ttlSeconds: RESET_PASSWORD.TTL_SECONDS,
-      limit: RESET_PASSWORD.LIMIT,
-    };
-    super(redis, config);
+    super(redis);
   }
 
-  /**
-   * Build unique identifier from deviceId for throttling.
-   * @param req - Express request
-   * @returns string identifier
-   * @throws HttpException if deviceId is missing
-   */
-  protected buildIdentifier(req: Request): string {
-    const deviceId = req.headers['x-device-id'] as string;
-    if (!deviceId) {
-      throw new HttpException(
-        'Device identifier missing - x-device-id header is required',
-        HttpStatus.BAD_REQUEST,
-      );
+  protected buildLayers(req: FastifyRequest): ThrottleLayer[] {
+    const layers: ThrottleLayer[] = [
+      {
+        identifier: buildHybridIpKey(req),
+        config: {
+          keyPrefix: RESET_PASSWORD.KEY_PREFIX,
+          ttlSeconds: RESET_PASSWORD.TTL_SECONDS,
+          limit: RESET_PASSWORD.LIMIT,
+          blockSeconds: RESET_PASSWORD.BLOCK_SECONDS,
+          identifierType: 'ip+ua+device',
+        },
+      },
+    ];
+
+    const email = (req.body as Record<string, unknown> | undefined)?.['email'];
+    if (typeof email === 'string' && email.includes('@')) {
+      layers.push({
+        identifier: email.toLowerCase().trim(),
+        config: {
+          keyPrefix: RESET_PASSWORD_EMAIL.KEY_PREFIX,
+          ttlSeconds: RESET_PASSWORD_EMAIL.TTL_SECONDS,
+          limit: RESET_PASSWORD_EMAIL.LIMIT,
+          identifierType: 'email',
+        },
+      });
     }
 
-    return `${deviceId}`;
+    return layers;
   }
 }

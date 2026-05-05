@@ -1,0 +1,13 @@
+/**
+ * @fileoverview DTO for forgot-password request.
+ * No custom messages — constraint names drive i18n translation in the pipe.
+ */
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsNotEmpty } from 'class-validator';
+
+export class ForgotPasswordDto {
+  @ApiProperty({ example: 'john.doe@example.com' })
+  @IsEmail()
+  @IsNotEmpty()
+  email!: string;
+}

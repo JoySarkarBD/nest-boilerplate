@@ -1,0 +1,24 @@
+name: bd_tailors_project
+
+services:
+  db:
+    image: postgres:latest
+    container_name: postgres_db_tailor # Name of the PostgreSQL container
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: bd_tailors
+    volumes:
+      - pg_data:/var/lib/postgresql # To persist data
+
+  redis:
+    image: redis:latest
+    container_name: redis_cache_service # Name of the Redis container
+    ports:
+      - '6379:6379'
+
+volumes:
+  pg_data:
+    driver: local

@@ -41,6 +41,7 @@ export default tseslint.config(
       '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
       '@typescript-eslint/require-await': 'warn',
       '@typescript-eslint/no-unsafe-function-type': 'warn',
+      'typescript-eslint/no-unsafe-argument': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {

@@ -1,45 +1,60 @@
 /**
- * @fileoverview Forgot-password throttle guard.
+ * @fileoverview Forgot-password throttle guard — multi-layer.
  *
- * Limits how often a single device can request a password-reset OTP or Link
- * using the `FORGOT_PASSWORD` rate-limit constants.
+ * Layers enforced (in order):
+ *  1. IP + UA hash + optional device-id   (per-client, anti-spray)
+ *  2. Email identity                       (anti-multi-IP spray on same email)
+ *
+ * Stricter limits than login to protect the OTP issuance pipeline.
+ *
+ * @module throttles/auth
  */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Request } from 'express';
+import { Injectable } from '@nestjs/common';
+import type { FastifyRequest } from 'fastify';
 import { RedisClientService } from '../../redis/redis.client';
-import { BaseThrottleGuard, ThrottleConfig } from '../base-throttle.guard';
-import { FORGOT_PASSWORD } from './auth-throttle.constants';
+import {
+  BaseThrottleGuard,
+  buildHybridIpKey,
+  ThrottleLayer,
+} from '../base-throttle.guard';
+import {
+  FORGOT_PASSWORD,
+  FORGOT_PASSWORD_EMAIL,
+} from '../config/throttle.config';
 
-/**
- * Throttle guard for the forgot-password endpoint.
- * Ensures that a single device cannot flood the system with password reset requests.
- */
 @Injectable()
 export class ForgotPasswordThrottleGuard extends BaseThrottleGuard {
   constructor(redis: RedisClientService) {
-    const config: ThrottleConfig = {
-      keyPrefix: FORGOT_PASSWORD.KEY_PREFIX,
-      ttlSeconds: FORGOT_PASSWORD.TTL_SECONDS,
-      limit: FORGOT_PASSWORD.LIMIT,
-    };
-    super(redis, config);
+    super(redis);
   }
 
-  /**
-   * Build unique identifier from deviceId for throttling.
-   * @param req - Express request
-   * @returns string identifier
-   * @throws HttpException if deviceId is missing
-   */
-  protected buildIdentifier(req: Request): string {
-    const deviceId = req.headers['x-device-id'] as string;
-    if (!deviceId) {
-      throw new HttpException(
-        'Device identifier missing - x-device-id header is required',
-        HttpStatus.BAD_REQUEST,
-      );
+  protected buildLayers(req: FastifyRequest): ThrottleLayer[] {
+    const layers: ThrottleLayer[] = [
+      {
+        identifier: buildHybridIpKey(req),
+        config: {
+          keyPrefix: FORGOT_PASSWORD.KEY_PREFIX,
+          ttlSeconds: FORGOT_PASSWORD.TTL_SECONDS,
+          limit: FORGOT_PASSWORD.LIMIT,
+          blockSeconds: FORGOT_PASSWORD.BLOCK_SECONDS,
+          identifierType: 'ip+ua+device',
+        },
+      },
+    ];
+
+    const email = (req.body as Record<string, unknown> | undefined)?.['email'];
+    if (typeof email === 'string' && email.includes('@')) {
+      layers.push({
+        identifier: email.toLowerCase().trim(),
+        config: {
+          keyPrefix: FORGOT_PASSWORD_EMAIL.KEY_PREFIX,
+          ttlSeconds: FORGOT_PASSWORD_EMAIL.TTL_SECONDS,
+          limit: FORGOT_PASSWORD_EMAIL.LIMIT,
+          identifierType: 'email',
+        },
+      });
     }
 
-    return `${deviceId}`;
+    return layers;
   }
 }

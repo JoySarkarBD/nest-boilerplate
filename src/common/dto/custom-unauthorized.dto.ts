@@ -1,19 +1,23 @@
 /**
  * @fileoverview DTO for 401 Unauthorized responses, used in Swagger documentation.
+ *
+ * The `message` and `error` fields reflect localised output — the actual value
+ * returned at runtime depends on the `lang` request header (`en` | `bn`).
  */
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
-/**
- * Represents a 401 Unauthorized error response.
- * This DTO defines the structure of the response returned when authentication is
- * required and has failed or has not been provided.
- */
 export class CustomUnauthorizedDto {
   @ApiProperty({ example: false })
   success!: boolean;
 
-  @ApiProperty({ example: 'Invalid credentials' })
+  @ApiProperty({
+    example: 'Session expired or invalid token',
+    description:
+      'Localised message. ' +
+      'EN: "Session expired or invalid token" | ' +
+      'BN: "সেশনের মেয়াদ শেষ হয়েছে বা টোকেন অকার্যকর"',
+  })
   message!: string;
 
   @ApiProperty({ example: Methods.POST })
@@ -28,6 +32,12 @@ export class CustomUnauthorizedDto {
   @ApiProperty({ example: '2026-02-22T12:00:00.000Z' })
   timestamp!: string;
 
-  @ApiProperty({ example: 'Invalid or expired token' })
+  @ApiProperty({
+    example: 'Session expired or invalid token',
+    description:
+      'Localised error detail. ' +
+      'EN: "Session expired or invalid token" | ' +
+      'BN: "সেশনের মেয়াদ শেষ হয়েছে বা টোকেন অকার্যকর"',
+  })
   error!: string;
 }

@@ -1,14 +1,14 @@
 /**
- * @fileoverview DTO for validating a single MongoDB ObjectId parameter.
+ * @fileoverview DTO for validating UUID route parameters.
  *
- * Use with `@Param()` on any endpoint that accepts an `:id` route param
- * to ensure it is a valid 24-character hex ObjectId.
+ * Renamed from MongoIdDto but kept for backward compatibility.
+ * Now validates PostgreSQL UUID (v4) format instead of MongoDB ObjectId.
  */
-import { ArrayNotEmpty, IsArray, IsMongoId, IsNotEmpty } from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsNotEmpty, IsUUID } from 'class-validator';
 
 export class MongoIdDto {
-  /** A valid 24-character MongoDB ObjectId. */
-  @IsMongoId({ message: 'ID must be a valid MongoDB ObjectId' })
+  /** A valid UUID v4. */
+  @IsUUID('4', { message: 'ID must be a valid UUID' })
   @IsNotEmpty({ message: 'ID is required' })
   id!: string;
 }
@@ -16,9 +16,6 @@ export class MongoIdDto {
 export class MongoIdsDto {
   @IsArray({ message: 'ids must be an array' })
   @ArrayNotEmpty({ message: 'IDs array cannot be empty' })
-  @IsMongoId({
-    each: true,
-    message: 'Each ID must be a valid MongoDB ObjectId',
-  })
+  @IsUUID('4', { each: true, message: 'Each ID must be a valid UUID' })
   ids!: string[];
 }

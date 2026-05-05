@@ -1,19 +1,23 @@
 /**
  * @fileoverview DTO for 429 Too Many Requests responses, used in Swagger documentation.
+ *
+ * The `message` and `error` fields reflect localised output — the actual value
+ * returned at runtime depends on the `lang` request header (`en` | `bn`).
  */
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
-/**
- * Represents a 429 Too Many Requests error response.
- * This DTO defines the structure of the response returned when a user has exceeded
- * the allowed rate limit for an endpoint.
- */
 export class CustomTooManyRequestsDto {
   @ApiProperty({ example: false })
   success!: boolean;
 
-  @ApiProperty({ example: 'Too many requests' })
+  @ApiProperty({
+    example: 'Too many requests. Please try again later.',
+    description:
+      'Localised message. ' +
+      'EN: "Too many requests. Please try again later." | ' +
+      'BN: "অনেক বেশি অনুরোধ করা হয়েছে। অনুগ্রহ করে কিছুক্ষণ পরে আবার চেষ্টা করুন।"',
+  })
   message!: string;
 
   @ApiProperty({ example: Methods.POST })
@@ -28,6 +32,12 @@ export class CustomTooManyRequestsDto {
   @ApiProperty({ example: '2026-02-23T12:00:00.000Z' })
   timestamp!: string;
 
-  @ApiProperty({ example: 'Too many requests error details' })
+  @ApiProperty({
+    example: 'Too many requests. Please try again later.',
+    description:
+      'Localised error detail. ' +
+      'EN: "Too many requests. Please try again later." | ' +
+      'BN: "অনেক বেশি অনুরোধ করা হয়েছে। অনুগ্রহ করে কিছুক্ষণ পরে আবার চেষ্টা করুন।"',
+  })
   error!: string;
 }

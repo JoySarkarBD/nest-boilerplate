@@ -1,7 +1,7 @@
 /**
- * @fileoverview Interceptor factory for handling single file uploads in the NestJS application.
- * It combines Multer with custom validation for MIME types (via magic bytes) and image safety
- * (preventing pixel floods, image bombs, etc.).
+ * @fileoverview Interceptor factory for handling single file uploads in the NestJS application using Fastify.
+ * It uses @fastify/multipart for multipart form-data processing and provides custom validation
+ * for MIME types and image safety.
  */
 import {
   BadRequestException,
@@ -13,9 +13,8 @@ import {
   mixin,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import multer from 'multer';
-import type { Request, Response } from 'express';
-import { FileUploadOptions } from '../types/file-upload.types';
+import type { FastifyRequest } from 'fastify';
+import { FileUploadOptions, UploadedFile } from '../types/file-upload.types';
 import { validateMimeType } from '../utils/magic-bytes.util';
 import { validateImageSafety } from '../utils/image-safety.util';
 
@@ -23,59 +22,14 @@ import { validateImageSafety } from '../utils/image-safety.util';
 const DEFAULT_MAX_SIZE = 5 * 1024 * 1024;
 
 /**
- * Executes Multer to process a single file upload as a Promise.
- *
- * @param req - The Express request object.
- * @param res - The Express response object.
- * @param fieldName - The name of the multipart form field containing the file.
- * @param maxSize - The maximum allowed file size in bytes.
- * @returns A Promise that resolves when the upload is complete or rejects on error.
- * @throws PayloadTooLargeException if the file exceeds the size limit.
- * @throws BadRequestException if another upload error occurs.
- */
-function runMulter(
-  req: Request,
-  res: Response,
-  fieldName: string,
-  maxSize: number,
-): Promise<void> {
-  const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: maxSize },
-  }).single(fieldName);
-
-  return new Promise((resolve, reject) => {
-    upload(req, res, (err: unknown) => {
-      if (!err) return resolve();
-
-      if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
-        return reject(
-          new PayloadTooLargeException(
-            `File exceeds the maximum allowed size of ${(maxSize / 1024 / 1024).toFixed(1)} MB.`,
-          ),
-        );
-      }
-      reject(
-        new BadRequestException(
-          (err as Error)?.message ?? 'File upload failed.',
-        ),
-      );
-    });
-  });
-}
-
-/**
  * Validates an individual file against the provided options.
  * This includes checking magic bytes for MIME types and pixel safety for images.
  *
- * @param file - The file object provided by Multer.
+ * @param file - The file object.
  * @param options - The validation options to apply.
  * @throws BadRequestException if validation fails for MIME type or image safety.
  */
-function validateFile(
-  file: Express.Multer.File,
-  options: FileUploadOptions,
-): void {
+function validateFile(file: UploadedFile, options: FileUploadOptions): void {
   // 1 — MIME / magic-bytes validation
   if (options.allowedMimeTypes?.length) {
     validateMimeType(file, options.allowedMimeTypes);
@@ -88,53 +42,92 @@ function validateFile(
 }
 
 /**
- * Factory that creates a NestJS interceptor for handling a **single** file upload.
+ * Factory that creates a NestJS interceptor for handling a **single** file upload with Fastify.
  *
  * @param fieldName - The multipart form field name (e.g., 'avatar').
  * @param options - Validation options including size limits, allowed MIME types, and image safety.
  * @returns A dynamically created interceptor class.
- *
- * @example
- * ```ts
- * @Post('avatar')
- * @UseInterceptors(ValidatedFileInterceptor('avatar', {
- *   maxSizeBytes: 2 * 1024 * 1024,
- *   allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
- *   image: { maxWidth: 4096, maxHeight: 4096 },
- * }))
- * async uploadAvatar(@UploadedFile() file: Express.Multer.File) { ... }
- * ```
  */
 export function ValidatedFileInterceptor(
   fieldName: string,
   options: FileUploadOptions = {},
 ) {
-  /**
-   * Internal interceptor class that handles the single file upload logic.
-   */
   @Injectable()
   class FileInterceptorMixin implements NestInterceptor {
-    /**
-     * Intercepts the request to process a single file upload and validate its content.
-     *
-     * @param context - The execution context of the request.
-     * @param next - The next handler in the request lifecycle.
-     * @returns An observable that continues the request processing.
-     */
     async intercept(
       context: ExecutionContext,
       next: CallHandler,
     ): Promise<Observable<any>> {
-      const req = context.switchToHttp().getRequest<Request>();
-      const res = context.switchToHttp().getResponse<Response>();
+      const req = context.switchToHttp().getRequest<FastifyRequest>();
       const maxSize = options.maxSizeBytes ?? DEFAULT_MAX_SIZE;
 
-      // Parse the multipart upload
-      await runMulter(req, res, fieldName, maxSize);
+      if (!req.isMultipart()) {
+        throw new BadRequestException('Request is not multipart/form-data');
+      }
 
-      // Validate the uploaded file
-      if (req.file) {
-        validateFile(req.file, options);
+      try {
+        const data = await req.file({
+          limits: { fileSize: maxSize },
+        });
+
+        if (!data) {
+          return next.handle();
+        }
+
+        if (data.fieldname !== fieldName) {
+          throw new BadRequestException(
+            `Expected field name "${fieldName}" but received "${data.fieldname}"`,
+          );
+        }
+
+        const buffer = await data.toBuffer();
+
+        // Check file size again because toBuffer might not enforce it strictly depending on config
+        if (buffer.length > maxSize) {
+          throw new PayloadTooLargeException(
+            `File exceeds the maximum allowed size of ${(maxSize / 1024 / 1024).toFixed(1)} MB.`,
+          );
+        }
+
+        const file: UploadedFile = {
+          fieldname: data.fieldname,
+          originalname: data.filename,
+          encoding: data.encoding,
+          mimetype: data.mimetype,
+          size: buffer.length,
+          buffer: buffer,
+        };
+
+        // Attach to request for controllers (standard Nest naming is slightly different but we follow the pattern)
+        (req as any).file = file;
+
+        // Also handle other fields if any
+        if (data.fields) {
+          const body: Record<string, any> = {};
+          for (const key of Object.keys(data.fields)) {
+            const field = data.fields[key];
+            if (field && 'value' in field) {
+              body[key] = field.value;
+            }
+          }
+          req.body = { ...(req.body as object), ...body };
+        }
+
+        // Validate the uploaded file
+        validateFile(file, options);
+      } catch (err: any) {
+        if (err.code === 'FST_REQ_FILE_TOO_LARGE') {
+          throw new PayloadTooLargeException(
+            `File exceeds the maximum allowed size of ${(maxSize / 1024 / 1024).toFixed(1)} MB.`,
+          );
+        }
+        if (
+          err instanceof BadRequestException ||
+          err instanceof PayloadTooLargeException
+        ) {
+          throw err;
+        }
+        throw new BadRequestException(err?.message ?? 'File upload failed.');
       }
 
       return next.handle();

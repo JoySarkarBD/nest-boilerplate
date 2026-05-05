@@ -1,0 +1,32 @@
+// ============================================================
+// schema.prisma  (root — kept for tooling compat)
+//
+// With Prisma's `prismaSchemaFolder` preview feature enabled
+// in base.prisma, the CLI reads ALL *.prisma files inside
+// the `prisma/schemas/` folder and merges them automatically.
+//
+// File layout:
+//   prisma/
+//   ├── schema.prisma          ← this file (entry point / legacy compat)
+//   └── schemas/
+//       ├── base.prisma        ← generator + datasource
+//       ├── user.prisma        ← User model + UserRole enum
+//       └── (future domains)   ← product.prisma, order.prisma, …
+//
+// To add a new domain:
+//   1. Create prisma/schemas/<domain>.prisma
+//   2. Define models + enums scoped to that domain
+//   3. Run `npx prisma generate` — no changes needed here
+//
+// Migration workflow:
+//   npx prisma migrate dev --name <description>
+//   npx prisma migrate deploy   (CI/CD / production)
+//   npx prisma db seed          (seed data)
+// ============================================================
+
+// Re-export everything from the schemas/ folder.
+// Prisma CLI resolves all sibling *.prisma files automatically
+// when `prismaSchemaFolder` feature is active.
+
+// NOTE: Do NOT define models or enums here — keep them in
+// prisma/schemas/*.prisma files for clean domain separation.

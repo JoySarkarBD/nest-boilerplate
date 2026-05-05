@@ -16,11 +16,10 @@ import {
 } from '@nestjs/swagger';
 import { CustomConflictDto } from '../dto/custom-conflict.dto';
 import { CustomForbiddenDto } from '../dto/custom-forbidden.dto';
-import { CustomInternalServerErrorDto } from '../dto/custom-internal-server-error.dto';
 import { CustomNotFoundDto } from '../dto/custom-not-found.dto';
 import { CustomUnauthorizedDto } from '../dto/custom-unauthorized.dto';
-import { ValidationErrorResponseDto } from '../dto/validation-error.dto';
 import { CustomUnsupportedMediaTypeDto } from '../dto/custom-unsupported-media-type.dto';
+import { ValidationErrorResponseDto } from '../dto/validation-error.dto';
 import { FileUploadPayloadTooLargeDto } from '../file-upload/dto/error/file-upload-validation-error.dto';
 
 /**

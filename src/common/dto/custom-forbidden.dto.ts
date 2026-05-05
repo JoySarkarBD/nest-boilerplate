@@ -1,19 +1,23 @@
 /**
  * @fileoverview DTO for 403 Forbidden responses, used in Swagger documentation.
+ *
+ * The `message` and `error` fields reflect localised output — the actual value
+ * returned at runtime depends on the `lang` request header (`en` | `bn`).
  */
 import { ApiProperty } from '@nestjs/swagger';
 import { Methods } from '../enum/methods.enum';
 
-/**
- * Represents a 403 Forbidden error response.
- * This DTO defines the structure of the response returned when a user attempts to
- * access a resource they do not have permission for.
- */
 export class CustomForbiddenDto {
   @ApiProperty({ example: false })
   success!: boolean;
 
-  @ApiProperty({ example: 'Forbidden access' })
+  @ApiProperty({
+    example: 'Insufficient permissions',
+    description:
+      'Localised message. ' +
+      'EN: "Insufficient permissions" | ' +
+      'BN: "অপর্যাপ্ত অনুমতি"',
+  })
   message!: string;
 
   @ApiProperty({ example: Methods.POST })
@@ -28,6 +32,12 @@ export class CustomForbiddenDto {
   @ApiProperty({ example: '2026-02-22T12:00:00.000Z' })
   timestamp!: string;
 
-  @ApiProperty({ example: 'Forbidden access details' })
+  @ApiProperty({
+    example: 'Insufficient permissions',
+    description:
+      'Localised error detail. ' +
+      'EN: "Insufficient permissions" | ' +
+      'BN: "অপর্যাপ্ত অনুমতি"',
+  })
   error!: string;
 }

@@ -14,10 +14,6 @@ import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiErrorResponses } from '../decorators/api-error-response.decorator';
 import { ApiSuccessResponse } from '../decorators/api-success-response.decorator';
 import {
-  FileUploadMultipleInternalErrorDto,
-  FileUploadSingleInternalErrorDto,
-} from './dto/error/file-upload-internal-error.dto';
-import {
   FileUploadPayloadTooLargeDto,
   FileUploadPayloadTooLargeMultipleDto,
   FileUploadUnsupportedMediaTypeDto,
@@ -28,6 +24,7 @@ import {
   FileUploadSingleSuccessDto,
 } from './dto/success/file-upload-success.dto';
 import { ValidatedFileInterceptor, ValidatedFilesInterceptor } from './index';
+import type { UploadedFile as MyUploadedFile } from './types/file-upload.types';
 
 /**
  * FileUploadTestController provides endpoints to test the boilerplate's file upload capabilities.
@@ -63,7 +60,6 @@ export class FileUploadTestController {
   @ApiErrorResponses({
     payloadTooLarge: FileUploadPayloadTooLargeDto, // 413 (but validation parameter handles it here)
     unsupported: FileUploadUnsupportedMediaTypeDto,
-    internal: FileUploadSingleInternalErrorDto,
   })
   @UseInterceptors(
     ValidatedFileInterceptor('avatar', {
@@ -76,16 +72,16 @@ export class FileUploadTestController {
       },
     }),
   )
-  async uploadSingle(@UploadedFile() file: Express.Multer.File) {
-      // At this point, `file` is guaranteed to be safe and match the allowed types.
-      return {
-        message: 'File uploaded and validated successfully',
-        data: {
-          fileName: file.originalname,
-          size: `${(file.size / 1024).toFixed(2)} KB`,
-          mimetype: file.mimetype,
-        },
-      };
+  async uploadSingle(@UploadedFile() file: MyUploadedFile) {
+    // At this point, `file` is guaranteed to be safe and match the allowed types.
+    return {
+      message: 'File uploaded and validated successfully',
+      data: {
+        fileName: file.originalname,
+        size: `${(file.size / 1024).toFixed(2)} KB`,
+        mimetype: file.mimetype,
+      },
+    };
   }
 
   /**
@@ -117,7 +113,6 @@ export class FileUploadTestController {
   @ApiErrorResponses({
     payloadTooLarge: FileUploadPayloadTooLargeMultipleDto,
     unsupported: FileUploadUnsupportedMediaTypeMultipleDto,
-    internal: FileUploadMultipleInternalErrorDto,
   })
   @UseInterceptors(
     ValidatedFilesInterceptor(
@@ -132,17 +127,17 @@ export class FileUploadTestController {
       5, // max allowed files
     ),
   )
-  async uploadMultiple(@UploadedFiles() files: Express.Multer.File[]) {
-      // `files` array is fully validated
-      return {
-        message: `${files.length} files uploaded and validated successfully`,
-        data: {
-          files: files.map((file) => ({
-            fileName: file.originalname,
-            size: `${(file.size / 1024).toFixed(2)} KB`,
-            mimetype: file.mimetype,
-          })),
-        },
-      };
+  async uploadMultiple(@UploadedFiles() files: MyUploadedFile[]) {
+    // `files` array is fully validated
+    return {
+      message: `${files.length} files uploaded and validated successfully`,
+      data: {
+        files: files.map((file) => ({
+          fileName: file.originalname,
+          size: `${(file.size / 1024).toFixed(2)} KB`,
+          mimetype: file.mimetype,
+        })),
+      },
+    };
   }
 }

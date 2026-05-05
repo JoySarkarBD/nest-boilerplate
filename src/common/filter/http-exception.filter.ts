@@ -1,7 +1,27 @@
 /**
- * @fileoverview Global HTTP exception filter for the NestJS application.
- * Catches all exceptions thrown within the application context, including standard HTTP
- * exceptions and custom errors, transforming them into a standardized JSON response format.
+ * @fileoverview Global HTTP exception filter.
+ *
+ * Catches every exception thrown within the application context and formats it
+ * into the standard error envelope:
+ * ```json
+ * {
+ *   "success": false,
+ *   "message": "<localised>",
+ *   "method": "POST",
+ *   "endpoint": "/api/auth/register",
+ *   "statusCode": 400,
+ *   "timestamp": "...",
+ *   "errors": [{ "field": "...", "message": "<localised>" }]
+ * }
+ * ```
+ *
+ * i18n:
+ *  - Business exceptions (from AuthService, etc.) carry a pre-localised
+ *    message — passed through unchanged.
+ *  - Validation errors are fully localised by {@link I18nValidationPipe}
+ *    before they reach this filter — also passed through unchanged.
+ *  - Infrastructure messages (path not found, internal server error) are
+ *    localised here via the `lang` request header.
  */
 import {
   ArgumentsHost,
@@ -10,81 +30,63 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import type { Request, Response } from 'express';
+import type { FastifyReply, FastifyRequest } from 'fastify';
+import { getSystemMessages, resolveLangFromRequest } from '../i18n';
 
-/**
- * HttpExceptionFilter is responsible for processing exceptions and formatting the API's error responses.
- * It ensures that all errors, whether expected or unexpected, follow the same response structure.
- */
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  /**
-   * Handles any caught exception and transforms it into a standardized response.
-   *
-   * @param exception - The caught exception or error object.
-   * @param host - The arguments host, providing access to the current request and response objects.
-   */
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
+    const response = ctx.getResponse<FastifyReply>();
+    const request = ctx.getRequest<FastifyRequest>();
 
-    let status: number =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+    const lang = resolveLangFromRequest(request);
+    const m = getSystemMessages(lang);
 
-    let message = 'Internal server error';
+    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    let message: string = m.INTERNAL_SERVER_ERROR;
     let errors: { field: string; message: string }[] | undefined;
     let error: string | undefined;
 
-    /* Validation-pipe errors arrive as a raw array */
-    if (Array.isArray(exception)) {
-      status = HttpStatus.BAD_REQUEST;
-      message = 'Validation failed';
-      errors = (exception as Record<string, any>[]).flatMap((err) => {
-        const field: string = (err.property as string) || 'unknown';
-        const constraints: string[] = err.constraints
-          ? Object.values(err.constraints as Record<string, string>)
-          : ['Invalid value'];
-        return constraints.map((msg) => ({ field, message: msg }));
-      });
-    } else if (exception instanceof HttpException) {
+    if (exception instanceof HttpException) {
+      status = exception.getStatus();
       const body = exception.getResponse();
-      let isRouteNotFound = false;
 
       if (typeof body === 'string') {
-        message = body;
-        error = body;
-        isRouteNotFound = body.startsWith('Cannot ');
+        // Route-not-found produces "Cannot GET /path"
+        message = body.startsWith('Cannot ') ? m.PATH_NOT_FOUND : body;
+        error = message;
       } else if (body && typeof body === 'object') {
         const obj = body as Record<string, unknown>;
-        message = (obj.message as string) || message;
+
+        const rawMsg = obj.message as string | undefined;
+        const isRouteNotFound =
+          typeof rawMsg === 'string' && rawMsg.startsWith('Cannot ');
+
+        message = isRouteNotFound
+          ? m.PATH_NOT_FOUND
+          : (rawMsg ?? m.INTERNAL_SERVER_ERROR);
+
         error = obj.error as string | undefined;
-        errors =
-          (obj.errors as { field: string; message: string }[] | undefined) ||
-          errors; // Extract errors if present in body
-        isRouteNotFound =
-          typeof obj.message === 'string' && obj.message.startsWith('Cannot ');
+        errors = obj.errors as { field: string; message: string }[] | undefined;
       }
 
-      if (status === (HttpStatus.NOT_FOUND as number) && isRouteNotFound) {
-        message = 'Path not found';
-        error = 'Path not found';
+      // Double-check for Nest's 404 on unknown routes
+      if (status === HttpStatus.NOT_FOUND && !errors) {
+        message = m.PATH_NOT_FOUND;
+        error = m.PATH_NOT_FOUND;
       }
     }
 
-    const payload = {
+    void response.code(status).send({
       success: false,
       message,
       method: request?.method,
-      endpoint: request?.originalUrl || request?.url || '',
+      endpoint: request?.url ?? '',
       statusCode: status,
       timestamp: new Date().toISOString(),
       ...(errors && { errors }),
       ...(error && !errors && { error }),
-    };
-
-    response.status(status).json(payload);
+    });
   }
 }

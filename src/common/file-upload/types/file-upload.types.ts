@@ -36,3 +36,15 @@ export interface FileUploadOptions {
    */
   image?: ImageSafetyOptions;
 }
+
+/**
+ * Interface representing an uploaded file, compatible with the Fastify-based system.
+ */
+export interface UploadedFile {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+}
